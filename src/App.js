@@ -40,13 +40,16 @@ function App() {
         segmentationThreshold: 0.7,
       });
       console.log(person);
+      let bodyParts = person.allPoses; // Different confidence values
+      let dataArray = person.data; // Body segmentation on camera
+      console.log([...new Set(dataArray)]); // Different numbers for different body parts.
       // Draw detections
       const coloredPartImage = bodyPix.toColoredPartMask(person);
       bodyPix.drawMask(
         canvasRef.current,
         video,
         coloredPartImage,
-        0.7,
+        .5,
         0,
         true
       );
