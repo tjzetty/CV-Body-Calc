@@ -1,8 +1,9 @@
 import React, { useRef } from "react";
-import "./App.css";
+import Webcam from "react-webcam";
 import * as tf from "@tensorflow/tfjs";
 import * as bodyPix from "@tensorflow-models/body-pix";
-import Webcam from "react-webcam";
+
+import "./App.css";
 
 function App() {
   const webcamRef = useRef(null);
@@ -43,6 +44,8 @@ function App() {
       let bodyParts = person.allPoses; // Different confidence values
       let dataArray = person.data; // Body segmentation on camera
       console.log([...new Set(dataArray)]); // Different numbers for different body parts.
+
+
       // Draw detections
       const coloredPartImage = bodyPix.toColoredPartMask(person);
       bodyPix.drawMask(
