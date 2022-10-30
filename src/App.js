@@ -40,10 +40,22 @@ function App() {
         internalResolution: "medium",
         segmentationThreshold: 0.7,
       });
-      console.log(person);
+      //console.log(person);
       let bodyParts = person.allPoses; // Different confidence values
       let dataArray = person.data; // Body segmentation on camera
-      console.log([...new Set(dataArray)]); // Different numbers for different body parts.
+      let min = -1;
+      let max = -1;
+      console.log("MIN: ", min, "MAX: ", max);
+      for (let i = 0; i < dataArray.length - 1; i++) {
+        for (let j = 0; j < dataArray[0].length; j++) {
+          let current = dataArray[i][j];
+          console.log(current);
+          // TODO: Check to see if current is 1 or 0 (head) and i-1 is a 13 (chest)
+          //if dataArray[i][j] 
+        }
+      }
+      console.log("MIN: ", min, "MAX: ", max);
+      //console.log([...new Set(dataArray)]); // Different numbers for different body parts.
 
 
       // Draw detections
