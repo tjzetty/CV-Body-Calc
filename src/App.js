@@ -40,22 +40,32 @@ function App() {
         internalResolution: "medium",
         segmentationThreshold: 0.7,
       });
-      //console.log(person);
+      console.log(person);
       let bodyParts = person.allPoses; // Different confidence values
       let dataArray = person.data; // Body segmentation on camera
-      let min = -1;
-      let max = -1;
-      console.log("MIN: ", min, "MAX: ", max);
-      for (let i = 0; i < dataArray.length - 1; i++) {
-        for (let j = 0; j < dataArray[0].length; j++) {
-          let current = dataArray[i][j];
-          console.log(current);
-          // TODO: Check to see if current is 1 or 0 (head) and i-1 is a 13 (chest)
-          //if dataArray[i][j] 
+      let neckMin = [-1, -1];
+      let neckMax = [-1, -1];
+      console.log("data: " + typeof(dataArray) + " , data[]: " + dataArray[0] + ", data[][]" + typeof(dataArray[0][0]));
+      for (var i = 0; i < dataArray.length - 640; i++) {
+        let current = dataArray[i];
+        let next = dataArray[i +640];
+        // TODO: Check to see if current is 1 or 0 (head) and i-1 is a 13 (chest)
+        let currentIsHead = current === 0 || current === 1;
+        let belowIsBody = next === 13 || next === 12;
+        if (currentIsHead && belowIsBody) {
+          let x = i % 640;
+          let y = Math.floor(i / 640);
+          neckMin[0] = (neckMin[0] < 0) ? x : Math.min(x, neckMin[0]);
+          neckMax[0] = (neckMax[0] < 0) ? x : Math.max(x, neckMax[0]);
+          neckMin[1] = (neckMin[1] < 0) ? x : Math.min(y, neckMin[1]);
+          neckMax[1] = (neckMax[1] < 0) ? x : Math.max(y, neckMax[1]);
+          // console.log("x: " + x + ", y: " + y);
         }
       }
-      console.log("MIN: ", min, "MAX: ", max);
-      //console.log([...new Set(dataArray)]); // Different numbers for different body parts.
+      console.log("Neck width: ", neckMax[0] - neckMin[0]);
+
+      // console.log("MIN: ", min, "MAX: ", max);
+      console.log([...new Set(dataArray)]); // Different numbers for different body parts.
 
 
       // Draw detections
@@ -68,6 +78,14 @@ function App() {
         0,
         true
       );
+
+      const ctx = canvasRef.current.getContext("2d");
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(neckMin[0], neckMin[1]);
+      ctx.lineTo(neckMax[0], neckMax[1]);
+      ctx.stroke();
     }
   };
 
