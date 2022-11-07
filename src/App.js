@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
 import * as tf from "@tensorflow/tfjs";
 import * as bodyPix from "@tensorflow-models/body-pix";
@@ -13,6 +13,26 @@ const App = () => {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
 
+  // User inputs gathered using State cause why not
+  const [inputHeight, setInputHeight] = useState('');
+  const [inputWeight, setInputWeight] = useState('');
+  const [inputAge, setInputAge] = useState('');
+  const [inputGender, setInputGender] = useState('');
+  // Event handlers for user inputs
+  const onHeightInput = event => {
+    setInputHeight(event.target.value);
+  };
+  const onWeightInput = event => {
+    setInputWeight(event.target.value);
+  };
+  const onAgeInput = event => {
+    setInputAge(event.target.value);
+  };
+  const onGenderInput = event => {
+    setInputGender(event.target.value);
+  };
+
+  // Just some global values to use for calculations 
   let personHeight;
   let neckWidth;
   let waistWidth;
@@ -151,8 +171,9 @@ const App = () => {
           true
         );
 
-        const elli = ellipseCircumference(4, 4);
-        console.warn(elli);
+        // Just some example usages for later :)
+        const elli = ellipseCircumference(parseInt(inputHeight), parseInt(inputWeight));
+        console.warn("major ", inputHeight, ", minor ", inputWeight, ", circ ", elli);
       }
     } catch (e) {
       // Getting rid of those annoying type errors...
@@ -165,6 +186,47 @@ const App = () => {
 
   return (
     <div className="App">
+      <input
+        type="number"
+        placeholder="? lbs"
+        id="inputHeight"
+        name="inputHeight"
+        onChange={onHeightInput}
+        value={inputHeight}
+      />
+      <input
+        type="number"
+        placeholder="? inches"
+        id="inputWeight"
+        name="inputWeight"
+        onChange={onWeightInput}
+        value={inputWeight}
+      />
+      <input
+        type="number"
+        placeholder="? years"
+        id="inputAge"
+        name="inputAge"
+        onChange={onAgeInput}
+        value={inputAge}
+      />
+      <select 
+        defaultValue={'DEFAULT'} 
+        id="inputGender"
+        name="inputGender" 
+        onChange={onGenderInput} 
+        value={inputGender}
+      >
+        <option value="DEFAULT" disabled>Click to select...</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+      </select>
+
+      <h2>Height: {inputHeight}</h2>
+      <h2>Weight: {inputWeight}</h2>
+      <h2>Age: {inputAge}</h2>
+      <h2>Gender: {inputGender}</h2>
+
       <header className="App-header">
         <Webcam
           ref={webcamRef}
