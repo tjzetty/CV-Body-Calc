@@ -5,11 +5,15 @@ import * as bodyPix from "@tensorflow-models/body-pix";
 
 import "./App.css";
 
-function App() {
+function ellipseCircumference(major, minor) {
+  return Math.PI * (major + minor) * (3 * (major - minor) ** 2 / ((major + minor) ** 2 * (Math.sqrt(-3 * (major - minor) ** 2 / ((major + minor) ** 2) + 4) + 10)) + 1);
+}
+
+const App = () => {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
 
-  let height;
+  let personHeight;
   let neckWidth;
   let waistWidth;
   let hipsWidth;
@@ -126,11 +130,11 @@ function App() {
         }
 
         // Double checking measurements make sense as we move...
-        height = height[1] - height[0];
+        personHeight = height[1] - height[0];
         neckWidth = neckMax[0] - neckMin[0];
         hipsWidth = hipsMax[0] - hipsMin[0];
         waistWidth = waistMax[0] - waistMin[0];
-        console.log("Height: ", height);
+        console.log("Height: ", personHeight);
         console.log("Neck width: ", neckWidth);
         console.log("Hips width: ", hipsWidth);
         console.log("Waist width: ", waistWidth);
@@ -146,6 +150,9 @@ function App() {
           0,
           true
         );
+
+        const elli = ellipseCircumference(4, 4);
+        console.warn(elli);
       }
     } catch (e) {
       // Getting rid of those annoying type errors...
