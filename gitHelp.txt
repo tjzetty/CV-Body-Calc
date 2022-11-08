@@ -1,0 +1,12 @@
+git clone url #clones the url
+git branch -a #shows the branches 
+git checkout branchName #replace branchName with branch to get new branch
+
+git status #shows whats been changed
+git add . #adds all to branch
+git commit -m "" #commits with message
+git push #pushes branch
+
+yarn start #starts program
+
+ctrl-c #stops program
