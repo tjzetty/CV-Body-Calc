@@ -34,6 +34,7 @@ function App() {
   };
 
   const detect = async (net) => {
+    // Check data is available
     try {
       if (
         typeof webcamRef.current !== "undefined" &&
