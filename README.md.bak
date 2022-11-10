@@ -5,5 +5,3 @@ React project using TensorFlow JS and BodyPix to measure a person using the webc
 Estimates made using the US Navy Formula for body fat estimation.
 
 Start the project with `yarn start`
-
-sup
