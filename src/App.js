@@ -7,12 +7,14 @@ import "./App.css";
 import { conv2d, image, model, Tensor, tensor6d } from "@tensorflow/tfjs";
 
 let timerCount = 3;
-let holdStill = 1;
+let activeTimer = 1;
+let screenShot = null;
+const timerInterval = null;
+
 function App() {
-  let imageHolder = null;
+  let imageSave = null;
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
-
   const runBodySegment = async () => {
     const net = await bodyPix.load();
     // console.log("Bodypix model loaded.")
@@ -38,6 +40,7 @@ function App() {
       // Set canvas width and height
       canvasRef.current.height = videoHeight;
       canvasRef.current.width = videoWidth;
+      imageSave = canvasRef.current.toDataURL("image/png");
       // Make detections
       const person = await net.segmentPersonParts(video, {
         flipHorizontal: false,
@@ -49,40 +52,41 @@ function App() {
 
       let bodyParts = person.allPoses; // Different confidence values
       //console.log(person.allPoses);
-      let total = 0;
-      for(let count = 0; count < bodyParts.length; count++)//gets average of different scores 
-      {
-          let hold = bodyParts[count]['keypoints'];
-          let tempTot = 0;
-          for(let count2 = 0; count2 < 17; count2++)//averages the keypoints
+      
+
+      let scores = bodyParts[0]['keypoints'];
+      let confidence = 0.90;
+      if(scores[0]['score'] > confidence && scores[1]['score']  > confidence && scores[12]['score']  > confidence 
+        && scores[13]['score']  > confidence && scores[14]['score']  > confidence && scores[16]['score']  > confidence)//check confidences
+        {
+          if(activeTimer == 1)//boolean to check if timer already started ticking
           {
-              if(count2 == 0 || count2 == 1 || count2 == 2 || count2 == 5 || count2 == 6 || count2 > 10)
-              {
-                tempTot += hold[count2]["score"];
-              }
+            timerInterval = setInterval(countDown,1000);
           }
-          tempTot = tempTot/11;
-          total += tempTot;
-      }
-
-      total = total/bodyParts.length;
-
-      if(total > 0.9 && holdStill == 1)//checks if confidence is above %90
-      {
-        setInterval(countDown,1000);
-        console.log(timerCount);
-        holdStill = 0;
-      }
-      else
-      {
-        //holdStill = 1;
-        timerCount = 3;
-      }
+            console.log(timerCount);
+            activeTimer = 0;
+        }
+        else
+        {
+          timerCount = 3;
+          activeTimer = 1;
+          console.log(timerCount);
+        }
+        
+        /* This is test code for future overlay
+        var contextvar = canvasRef.current.getContext("2d");
+        var imageObj = new Image();
+        imageObj.onload=function(){
+          contextvar.drawImage(imageObj,10,10);
+        }
+        imageObj.src = "http://wannabevc.files.wordpress.com/2010/09/im-cool.jpg";
+        */
 
       if(timerCount <= 0)//when timer set to 0 save image
       {
-        imageHolder = await net.estimatePersonSegmentation(video, 16, 0.7); //save image I think
-        console.log(imageHolder);
+        screenShot = imageSave;
+        clearInterval(timerInterval);
+        timerCount = 3;
       }
       //console.log(total/bodyParts.length);
 
