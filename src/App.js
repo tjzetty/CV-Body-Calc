@@ -5,7 +5,18 @@ import * as bodyPix from "@tensorflow-models/body-pix";
 
 import "./App.css";
 
+let timerCount = 3;
+let activeTimer = 1;
+let screenShot = null;
+let timerInterval = null;
+
+
+function countDown() {
+  timerCount--;
+}
+
 function App() {
+  let imageSave = null;
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -40,15 +51,53 @@ function App() {
         // Set canvas width and height
         canvasRef.current.height = videoHeight;
         canvasRef.current.width = videoWidth;
+        imageSave = canvasRef.current.toDataURL("image/png");
         // Make detections
         const person = await net.segmentPersonParts(video, {
           flipHorizontal: false,
           internalResolution: "medium",
-          segmentationThreshold: 0.7,
+          segmentationThreshold: 0.9,
         });
-        console.log(person);
-        let bodyParts = person.allPoses; // Different confidence values
+        // let scores = person.allPoses[0]['keypoints']; // Different confidence values
         let dataArray = person.data; // Body segmentation on camera
+        // let confidenceLimit = 0.90;
+        // let confident = scores[0]['score']   > confidenceLimit && 
+        //                 scores[1]['score']   > confidenceLimit && 
+        //                 scores[12]['score']  > confidenceLimit && 
+        //                 scores[13]['score']  > confidenceLimit && 
+        //                 scores[14]['score']  > confidenceLimit && 
+        //                 scores[16]['score']  > confidenceLimit;
+
+        if(true) {
+            // Is timer already ticking?
+            if(activeTimer === 1) {
+              timerInterval = setInterval(countDown,1000);
+            }
+            console.log(timerCount);
+            activeTimer = 0;
+        } else {
+          timerCount = 3;
+          activeTimer = 1;
+          console.log(timerCount);
+        }
+        
+        /* This is test code for future overlay
+        var contextvar = canvasRef.current.getContext("2d");
+        var imageObj = new Image();
+        imageObj.onload=function(){
+          contextvar.drawImage(imageObj,10,10);
+        }
+        imageObj.src = "http://wannabevc.files.wordpress.com/2010/09/im-cool.jpg";
+        */
+        
+        // When timer set to 0 save image
+        if(timerCount <= 0)
+        {
+          screenShot = imageSave;
+          clearInterval(timerInterval);
+          timerCount = 3;
+        }
+
 
         // Measurements (coordinates)
         let height = [-1, -1];
