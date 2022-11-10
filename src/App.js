@@ -97,13 +97,13 @@ const App = () => {
           let belowIsWaist = next === 14 || next === 16;
 
           if (currentIsPerson) {
-            height[0] = height[0] > 0 ? y : Math.min(y, height[0]);
-            height[1] = height[1] > 0 ? y : Math.max(y, height[1]);
+            height[0] = height[0] < 0 ? y : Math.min(y, height[0]);
+            height[1] = height[1] < 0 ? y : Math.max(y, height[1]);
           }
           // grab torso measurement
           if (currentIsBody) {
-            torso[0] = torso[0] > 0 ? y : Math.min(y, torso[0]);
-            torso[1] = torso[1] > 0 ? y : Math.max(y, torso[1]);
+            torso[0] = torso[0] < 0 ? y : Math.min(y, torso[0]);
+            torso[1] = torso[1] < 0 ? y : Math.max(y, torso[1]);
           }
           if (currentIsHead && belowIsBody) {
             // highlight line
@@ -172,8 +172,8 @@ const App = () => {
         );
 
         // Just some example usages for later :)
-        const elli = ellipseCircumference(parseInt(inputHeight), parseInt(inputWeight));
-        console.warn("major ", inputHeight, ", minor ", inputWeight, ", circ ", elli);
+        // const elli = ellipseCircumference(parseInt(inputHeight), parseInt(inputWeight));
+        // console.warn("major ", inputHeight, ", minor ", inputWeight, ", circ ", elli);
       }
     } catch (e) {
       // Getting rid of those annoying type errors...
