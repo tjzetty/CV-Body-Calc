@@ -9,6 +9,22 @@ function ellipseCircumference(major, minor) {
   return Math.PI * (major + minor) * (3 * (major - minor) ** 2 / ((major + minor) ** 2 * (Math.sqrt(-3 * (major - minor) ** 2 / ((major + minor) ** 2) + 4) + 10)) + 1);
 }
 
+function pxToIn(heightPx, heightIn, measurement) {
+  ratio = heightIn/heightPx;
+  return measurement * ratio;
+}
+
+// Inputs in Inches, output a percentage
+function navySealBFormula(gender, height, waist, hip, neck) {
+  estimate = NaN
+  if (gender === 'M') {
+    estimate = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+  } else if (gender === 'F') {
+    estimate = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+  }
+  return estimate;
+}
+
 const App = () => {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
