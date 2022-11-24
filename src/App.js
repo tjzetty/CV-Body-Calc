@@ -5,7 +5,6 @@ import * as bodyPix from "@tensorflow-models/body-pix";
 
 import "./App.css";
 import { conv2d, image, model, Tensor, tensor6d } from "@tensorflow/tfjs";
-import { clear } from "@testing-library/user-event/dist/clear";
 
 const appState = {
   userData : "data",
@@ -17,6 +16,7 @@ const appState = {
 let state = appState.userData;
 let timerCount = 3;
 let activeTimer = 1;
+let screenShot = null;
 let timerInterval = null;
 let picCollect = Array(2).fill(null);
 
@@ -74,8 +74,12 @@ function App() {
     setInputGender(event.target.value);
   };
 
-  console.log(inputHeight);
-  console.log(inputGender);
+
+  let height;
+  let neckWidth;
+  let waistWidth;
+  let hipsWidth;
+
   const runBodySegment = async () => {
     const net = await bodyPix.load();
     // console.log("Bodypix model loaded.")
@@ -121,7 +125,6 @@ function App() {
             if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender == 'M' || inputGender == 'F'))
             {
                 state = appState.prePicture;
-                heading.textContent = "done";
             }
             break;
           case appState.prePicture: // stage to check for proper posision
@@ -132,8 +135,10 @@ function App() {
                         scores[13]['score']  > confidenceLimit && 
                          scores[14]['score']  > confidenceLimit && 
                          scores[16]['score']  > confidenceLimit;
+                         console.log(confident);
               if(confident) {
                   // Is timer already ticking?
+                  
                   if(activeTimer === 1) {
                     timerInterval = setInterval(countDown,1000);
                   }
@@ -319,7 +324,7 @@ function App() {
     <div className="App">
       <input
         type="number"
-        placeholder="? lbs"
+        placeholder="? inches"
         id="inputHeight"
         name="inputHeight"
         onChange={onHeightInput}
@@ -327,7 +332,7 @@ function App() {
       />
       <input
         type="number"
-        placeholder="? inches"
+        placeholder="? lbs"
         id="inputWeight"
         name="inputWeight"
         onChange={onWeightInput}
@@ -348,7 +353,7 @@ function App() {
         onChange={onGenderInput} 
         value={inputGender}
       >
-        <option value="DEFAULT" selected>Click to select...</option>
+        <option value="DEFAULT" disabled>Click to select...</option>
         <option value="M">Male</option>
         <option value="F">Female</option>
       </select>
@@ -389,7 +394,7 @@ function App() {
           }}
         />
       </header>
-      <h1 id="show">Scanning</h1>
+      <h1 id="show">Enter User Info</h1>
     </div>
   );
 }
