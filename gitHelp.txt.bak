@@ -10,5 +10,3 @@ git push #pushes branch
 yarn start #starts program
 
 ctrl-c #stops program
-
-git pull #update the files
