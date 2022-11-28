@@ -18,6 +18,7 @@ let timerCount = 3;
 let activeTimer = 1;
 let screenShot = null;
 let timerInterval = null;
+const personPic = null;
 let picCollect = Array(2).fill(null);
 
 function ellipseCircumference(major, minor) {
@@ -107,24 +108,35 @@ function App() {
         // Set canvas width and height
         canvasRef.current.height = videoHeight;
         canvasRef.current.width = videoWidth;
-        imageSave = canvasRef.current.toDataURL("image/png");
+       // canvasRef.current.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        //imageSave = canvasRef.toDataURL();
         // Make detections
         const person = await net.segmentPersonParts(video, {
           flipHorizontal: false,
           internalResolution: "medium",
           segmentationThreshold: 0.9,
         });
-         let scores = person.allPoses[0]['keypoints']; // Different confidence values
+        let scores = person.allPoses[0]['keypoints']; // Different confidence values
         let dataArray = person.data; // Body segmentation on camera
-        
-
+        // Draw detections
+        const coloredPartImage = bodyPix.toColoredPartMask(person);
+         bodyPix.drawMask(
+          canvasRef.current,
+          video,
+          coloredPartImage,
+          0.5,
+          0,
+          true
+        );
 
         const heading = document.getElementById('show');
         switch(state) {
           case appState.userData://checks to see if user data is available
+          //console.log("here");
             if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender == 'M' || inputGender == 'F'))
             {
-                state = appState.prePicture;
+              //console.log("change");
+              state = appState.prePicture;
             }
             break;
           case appState.prePicture: // stage to check for proper posision
@@ -135,7 +147,6 @@ function App() {
                         scores[13]['score']  > confidenceLimit && 
                          scores[14]['score']  > confidenceLimit && 
                          scores[16]['score']  > confidenceLimit;
-                         console.log(confident);
               if(confident) {
                   // Is timer already ticking?
                   
@@ -162,13 +173,13 @@ function App() {
               if(timerCount <= 0)
               {
                 resetTimer(timerInterval,2);
-                state = appState.afterPicture
+                state = appState.afterPicture;
                 if(picCollect[0] == null)
                 {
-                  picCollect[0] = imageSave;
+                  picCollect[0] = person;
                 }
                 else{
-                  picCollect[1] = imageSave;
+                  picCollect[1] = person;
                 }
               }
             break;
@@ -177,6 +188,7 @@ function App() {
                 {
                   state = appState.showInfo;
                   heading.textContent = "Calculating Body Fat Percentage";
+
                 }
                 else{
                   if(activeTimer === 1) {
@@ -197,6 +209,7 @@ function App() {
             break;
           case appState.showInfo:
             // Just some global values to use for calculations 
+              dataArray = picCollect[0].data; 
               let personHeight;
               let neckWidth;
               let waistWidth;
@@ -287,6 +300,7 @@ function App() {
               console.log("Hips width: ", hipsWidth);
               console.log("Waist width: ", waistWidth);
               console.log("--------------------------");
+              heading.textContent = navySealBFormula('M', inputHeight, pxToIn(personHeight, inputHeight, waistWidth),pxToIn(personHeight, inputHeight, hipsWidth) , pxToIn(personHeight, inputHeight, neckWidth));
             break;
           default:
             // code block
@@ -296,16 +310,7 @@ function App() {
 
         
 
-        // Draw detections
-        const coloredPartImage = bodyPix.toColoredPartMask(person);
-        bodyPix.drawMask(
-          canvasRef.current,
-          video,
-          coloredPartImage,
-          0.5,
-          0,
-          true
-        );
+        
 
         // Just some example usages for later :)
         // const elli = ellipseCircumference(parseInt(inputHeight), parseInt(inputWeight));
@@ -394,7 +399,7 @@ function App() {
           }}
         />
       </header>
-      <h1 id="show">Enter User Info</h1>
+      <h1 id="show">Input User Info</h1>
     </div>
   );
 }
