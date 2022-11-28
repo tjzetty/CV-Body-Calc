@@ -15,7 +15,7 @@ function pxToIn(heightPx, heightIn, measurement) {
 }
 
 // Inputs in Inches, output a percentage
-function navySealBFormula(gender, height, waist, hip, neck) {
+function navySealBFFormula(gender, height, waist, hip, neck) {
   estimate = NaN
   if (gender === 'M') {
     estimate = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
