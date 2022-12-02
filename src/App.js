@@ -58,6 +58,7 @@ function App() {
   const [inputHeight, setInputHeight] = useState('');
   const [inputAge, setInputAge] = useState('');
   const [inputGender, setInputGender] = useState('');
+  const [currentState, setCurrentState] = useState('');
   // Event handlers for user inputs
   const onHeightInput = event => {
     setInputHeight(event.target.value);
@@ -117,9 +118,9 @@ function App() {
         const heading = document.getElementById('show');
         switch(state) {
           case appState.userData://checks to see if user data is available
-            if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F'))
-            {
+            if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
                 state = appState.prePicture;
+                setCurrentState(state);          
             }
             break;
 
@@ -155,16 +156,15 @@ function App() {
             */
             
             // When timer set to 0 save image
-            if(timerCount <= 0)
-            {
+            if(timerCount <= 0) {
               resetTimer(timerInterval,2);
               state = appState.afterPicture
-              if(picCollect[0] == null)
-              {
-                picCollect[0] = imageSave;
+              setCurrentState(state);
+              if(picCollect[0] == null) {
+                picCollect[0] = dataArray;
               }
               else{
-                picCollect[1] = imageSave;
+                picCollect[1] = dataArray;
               }
             }
             break;
@@ -172,6 +172,7 @@ function App() {
           case appState.afterPicture: // checks to see if done taking all pictures
             if(picCollect[1] != null) {
               state = appState.showInfo;
+              setCurrentState(state);
               heading.textContent = "Calculating Body Fat Percentage";
             }
             else {
@@ -182,6 +183,7 @@ function App() {
               if(timerCount <= 0) {
                 resetTimer(timerInterval,3);
                 state = appState.prePicture;
+                setCurrentState(state);
               }
               else {
                 heading.textContent = "Get Ready for Second Pose";
@@ -190,6 +192,7 @@ function App() {
             break;
 
           case appState.showInfo:
+            setCurrentState(appState.showInfo);
             // Just some global values to use for calculations 
             let personHeight;
             let neckWidth;
@@ -348,6 +351,7 @@ function App() {
       <h2>Height: {inputHeight}</h2>
       <h2>Age: {inputAge}</h2>
       <h2>Gender: {inputGender}</h2>
+      <h2>State: {currentState}</h2>
 
       <header className="App-header">
         <Webcam
