@@ -59,6 +59,7 @@ function App() {
   const [inputHeight, setInputHeight] = useState('');
   const [inputAge, setInputAge] = useState('');
   const [inputGender, setInputGender] = useState('');
+  const [currentState, setCurrentState] = useState('');
   // Event handlers for user inputs
   const onHeightInput = event => {
     setInputHeight(event.target.value);
@@ -127,11 +128,9 @@ function App() {
         const heading = document.getElementById('show');
         switch(state) {
           case appState.userData://checks to see if user data is available
-          //console.log("here");
-            if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender == 'M' || inputGender == 'F'))
-            {
-              //console.log("change");
-              state = appState.prePicture;
+            if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
+                state = appState.prePicture;
+                setCurrentState(state);          
             }
             break;
 
@@ -156,57 +155,54 @@ function App() {
                 heading.textContent = "Pose";
               }
               
-              /* This is test code for future overlay
-              var contextvar = canvasRef.current.getContext("2d");
-              var imageObj = new Image();
-              imageObj.onload=function(){
-                contextvar.drawImage(imageObj,10,10);
-              }
-              imageObj.src = "http://wannabevc.files.wordpress.com/2010/09/im-cool.jpg";
-              */
-              
-              // When timer set to 0 save image
-              if(timerCount <= 0)
+            /* This is test code for future overlay
+            var contextvar = canvasRef.current.getContext("2d");
+            var imageObj = new Image();
+            imageObj.onload=function(){
+              contextvar.drawImage(imageObj,10,10);
+            }
+            imageObj.src = "http://wannabevc.files.wordpress.com/2010/09/im-cool.jpg";
+            */
+            
+            // When timer set to 0 save image
+            if(timerCount <= 0)
+            {
+              resetTimer(timerInterval,2);
+              state = appState.afterPicture
+              if(picCollect[0] == null)
               {
-                resetTimer(timerInterval,2);
-                state = appState.afterPicture;
-                if(picCollect[0] == null)
-                {
-                  picCollect[0] = person;
-                }
-                else{
-                  picCollect[1] = person;
-                }
+                picCollect[0] = imageSave;
+              }
+              else{
+                picCollect[1] = imageSave;
               }
             
             break;
 
           case appState.afterPicture: // checks to see if done taking all pictures
-            if(picCollect[1] != null)
-                {
-                  state = appState.showInfo;
-                  heading.textContent = "Calculating Body Fat Percentage";
-
-                }
-                else{
-                  if(activeTimer === 1) {
-                    timerInterval = setInterval(countDown,1000);
-                    activeTimer = 0;
-                  }
-                  if(timerCount <= 0)
-                  {
-                    resetTimer(timerInterval,3);
-                    state = appState.prePicture;
-                  }
-                  else
-                  {
-                    heading.textContent = "Get Ready for Second Pose";
-                  }
-                  
-                }
+            if(picCollect[1] != null) {
+              state = appState.showInfo;
+              setCurrentState(state);
+              heading.textContent = "Calculating Body Fat Percentage";
+            }
+            else {
+              if(activeTimer === 1) {
+                timerInterval = setInterval(countDown,1000);
+                activeTimer = 0;
+              }
+              if(timerCount <= 0) {
+                resetTimer(timerInterval,3);
+                state = appState.prePicture;
+                setCurrentState(state);
+              }
+              else {
+                heading.textContent = "Get Ready for Second Pose";
+              }
+            }
             break;
 
           case appState.showInfo:
+            setCurrentState(appState.showInfo);
             // Just some global values to use for calculations 
               dataArray = picCollect[0].data; 
               let personHeight;
@@ -358,6 +354,7 @@ function App() {
       <h2>Height: {inputHeight}</h2>
       <h2>Age: {inputAge}</h2>
       <h2>Gender: {inputGender}</h2>
+      <h2>State: {currentState}</h2>
 
       <header className="App-header">
         <Webcam
