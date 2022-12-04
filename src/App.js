@@ -171,12 +171,12 @@ function App() {
               state = appState.afterPicture
               if(picCollect[0] == null)
               {
-                picCollect[0] = imageSave;
+                picCollect[0] = dataArray;
               }
               else{
-                picCollect[1] = imageSave;
+                picCollect[1] = dataArray;
               }
-            
+            }
             break;
 
           case appState.afterPicture: // checks to see if done taking all pictures
