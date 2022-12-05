@@ -25,7 +25,7 @@ function pixelArrayToValues(dataArray) {
   let neckWidth;
   let waistWidth;
   let hipsWidth;
-
+  
   // Measurements (coordinates)
   let height = [-1, -1];
   let torso = [-1, -1]; // Shoulders, hips - vertical distance measurement
@@ -35,19 +35,17 @@ function pixelArrayToValues(dataArray) {
   let waistMax = [-1, -1];
   let hipsMin = [-1, -1];
   let hipsMax = [-1, -1];
-
   for (var i = 0; i < dataArray.length - 640; i++) {
     let current = dataArray[i];
     let next = dataArray[i + 640];
     let x = i % 640;
     let y = Math.floor(i / 640);
-
     let currentIsPerson = current !== -1;
     let currentIsHead = current === 0 || current === 1;
     let currentIsBody = current === 13 || current === 12;
     let belowIsBody = next === 13 || next === 12;
     let belowIsWaist = next === 14 || next === 16;
-
+    
     if (currentIsPerson) {
       height[0] = height[0] < 0 ? y : Math.min(y, height[0]);
       height[1] = height[1] < 0 ? y : Math.max(y, height[1]);
@@ -100,11 +98,11 @@ function pixelArrayToValues(dataArray) {
       waistMax[1] = waistMax[1] < 0 ? x : Math.max(y, waistMax[1]);
     }
   }
-
   personHeight = height[1] - height[0];
   neckWidth = neckMax[0] - neckMin[0];
   waistWidth = waistMax[0] - waistMin[0];
   hipsWidth = hipsMax[0] - hipsMin[0];
+  console.log([personHeight, neckWidth, waistWidth, hipsWidth]);
   return [personHeight, neckWidth, waistWidth, hipsWidth];
 }
 
@@ -218,18 +216,31 @@ function App() {
           case appState.userData://checks to see if user data is available
             if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
                 state = appState.prePicture;
-                setCurrentState(state);          
+                //setCurrentState(state);          
             }
             break;
 
           case appState.prePicture: // stage to check for proper posision
             let confidenceLimit = 0.90;
-            let confident = scores[0]['score']   > confidenceLimit && 
+            let confident;
+            if(picCollect[0] == null)
+              {
+                confident = scores[0]['score']   > confidenceLimit && 
                          scores[1]['score']   > confidenceLimit && 
                         scores[12]['score']  > confidenceLimit && 
                         scores[13]['score']  > confidenceLimit && 
                          scores[14]['score']  > confidenceLimit && 
                          scores[16]['score']  > confidenceLimit;
+              }
+              else{
+                confident = (scores[0]['score']   > confidenceLimit || 
+                         scores[1]['score']   > confidenceLimit) && 
+                        (scores[12]['score']  > confidenceLimit ||
+                        scores[13]['score']  > confidenceLimit) && 
+                         (scores[14]['score']  > confidenceLimit ||
+                         scores[16]['score']  > confidenceLimit);
+              }
+            
               if(confident) {
                   // Is timer already ticking?
                   
@@ -270,7 +281,7 @@ function App() {
           case appState.afterPicture: // checks to see if done taking all pictures
             if(picCollect[1] != null) {
               state = appState.showInfo;
-              setCurrentState(state);
+              //setCurrentState(state);
               heading.textContent = "Calculating Body Fat Percentage";
             }
             else {
@@ -281,7 +292,7 @@ function App() {
               if(timerCount <= 0) {
                 resetTimer(timerInterval,3);
                 state = appState.prePicture;
-                setCurrentState(state);
+                //setCurrentState(state);
               }
               else {
                 heading.textContent = "Get Ready for Second Pose";
@@ -290,31 +301,41 @@ function App() {
             break;
 
           case appState.showInfo:
-            setCurrentState(appState.showInfo);
+            //setCurrentState(appState.showInfo);
             // Just some global values to use for calculations 
-            dataArray = picCollect[0].data; 
-            const majorValues = pixelArrayToValues(dataArray);  // [personHeight, neckWidth, waistWidth, hipsWidth]
-            dataArray = picCollect[1].data;
-            const minorValues = pixelArrayToValues(dataArray);  // in pixel not inches
             
-            const personHeight = (majorValues[0] + minorValues[0]) / 2; // Average the heights, should be the same but this reduces error
-
-            const neckMajor = pxToIn(personHeight, inputHeight, majorValues[1]);
-            const neckMinor = pxToIn(personHeight, inputHeight, minorValues[1]);
-            const waistMajor = pxToIn(personHeight, inputHeight, majorValues[2]);
-            const waistMinor = pxToIn(personHeight, inputHeight, minorValues[2]);
-            const hipsMajor = pxToIn(personHeight, inputHeight, majorValues[3]);
-            const hipsMinor = pxToIn(personHeight, inputHeight, minorValues[3]);
-
-            const neckCircumference = ellipseCircumference(neckMajor, neckMinor);
-            const waistCircumference = ellipseCircumference(waistMajor, waistMinor);
-            const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
-
-            const BFEstimate = navySealBFormula(inputGender, personHeight, waistCircumference, hipsCircumference, neckCircumference);
-            setCurrentState(BFEstimate);
-
-
-            heading.textContent = BFEstimate;
+             
+              let personHeight = Array(2).fill(null);
+              let neckWidth = Array(2).fill(null);
+              let waistWidth = Array(2).fill(null);
+              let hipsWidth = Array(2).fill(null);
+              
+              let measurements = pixelArrayToValues(picCollect[0]);
+              
+              personHeight[0] = measurements[0];
+              neckWidth[0] =  pxToIn(personHeight[0], inputHeight, measurements[1]);
+              waistWidth[0] = pxToIn(personHeight[0], inputHeight, measurements[2]);
+              hipsWidth[0] = pxToIn(personHeight[0], inputHeight, measurements[3]);
+              measurements = pixelArrayToValues(picCollect[1]);
+              personHeight[1] = measurements[0];
+              
+              neckWidth[1] = pxToIn(personHeight[0], inputHeight, measurements[1]);
+              waistWidth[1] = pxToIn(personHeight[0], inputHeight, measurements[2]);
+              hipsWidth[1] = pxToIn(personHeight[0], inputHeight, measurements[3]);
+              
+              //cirumferences
+              let neckCirc = ellipseCircumference(neckWidth[0], neckWidth[1]);
+              let waistCirc = ellipseCircumference(waistWidth[0], waistWidth[1]);
+              let hipsCirc = ellipseCircumference(hipsWidth[0], hipsWidth[1]);
+              // Double checking measurements make sense as we move...
+              
+              //console.log("Height: ", inputHeight);
+              //console.log("Neck width: ",neckWidth[0]);
+              //console.log("Hips width: ", waistWidth[0]);
+              //console.log("Waist width: ", hipsWidth[0]);
+              //console.log("--------------------------");
+              heading.textContent = navySealBFormula('M', waistCirc,hipsCirc , neckCirc);
+              
             break;
 
           default:
