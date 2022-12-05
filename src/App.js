@@ -21,11 +21,6 @@ const personPic = null;
 let picCollect = Array(2).fill(null);
 
 function pixelArrayToValues(dataArray) {
-  let personHeight;
-  let neckWidth;
-  let waistWidth;
-  let hipsWidth;
-  
   // Measurements (coordinates)
   let height = [-1, -1];
   let torso = [-1, -1]; // Shoulders, hips - vertical distance measurement
@@ -98,11 +93,11 @@ function pixelArrayToValues(dataArray) {
       waistMax[1] = waistMax[1] < 0 ? x : Math.max(y, waistMax[1]);
     }
   }
-  personHeight = height[1] - height[0];
-  neckWidth = neckMax[0] - neckMin[0];
-  waistWidth = waistMax[0] - waistMin[0];
-  hipsWidth = hipsMax[0] - hipsMin[0];
-  console.log([personHeight, neckWidth, waistWidth, hipsWidth]);
+
+  let personHeight = height[1] - height[0];
+  let neckWidth = neckMax[0] - neckMin[0];
+  let waistWidth = waistMax[0] - waistMin[0];
+  let hipsWidth = hipsMax[0] - hipsMin[0];
   return [personHeight, neckWidth, waistWidth, hipsWidth];
 }
 
@@ -156,12 +151,7 @@ function App() {
   const onGenderInput = event => {
     setInputGender(event.target.value);
   };
-
-
-  let height;
-  let neckWidth;
-  let waistWidth;
-  let hipsWidth;
+  
 
   const runBodySegment = async () => {
     const net = await bodyPix.load();
@@ -303,39 +293,29 @@ function App() {
           case appState.showInfo:
             //setCurrentState(appState.showInfo);
             // Just some global values to use for calculations 
+            const majorValues = pixelArrayToValues(picCollect[0]);  // [personHeight, neckWidth, waistWidth, hipsWidth]
+            console.warn("Values returned from pixelArrayToValues: " + majorValues);
+            const minorValues = pixelArrayToValues(picCollect[1]);  // in pixel not inches            
+            console.warn("Values returned from pixelArrayToValues: " + minorValues);
             
-             
-              let personHeight = Array(2).fill(null);
-              let neckWidth = Array(2).fill(null);
-              let waistWidth = Array(2).fill(null);
-              let hipsWidth = Array(2).fill(null);
-              
-              let measurements = pixelArrayToValues(picCollect[0]);
-              
-              personHeight[0] = measurements[0];
-              neckWidth[0] =  pxToIn(personHeight[0], inputHeight, measurements[1]);
-              waistWidth[0] = pxToIn(personHeight[0], inputHeight, measurements[2]);
-              hipsWidth[0] = pxToIn(personHeight[0], inputHeight, measurements[3]);
-              measurements = pixelArrayToValues(picCollect[1]);
-              personHeight[1] = measurements[0];
-              
-              neckWidth[1] = pxToIn(personHeight[0], inputHeight, measurements[1]);
-              waistWidth[1] = pxToIn(personHeight[0], inputHeight, measurements[2]);
-              hipsWidth[1] = pxToIn(personHeight[0], inputHeight, measurements[3]);
-              
-              //cirumferences
-              let neckCirc = ellipseCircumference(neckWidth[0], neckWidth[1]);
-              let waistCirc = ellipseCircumference(waistWidth[0], waistWidth[1]);
-              let hipsCirc = ellipseCircumference(hipsWidth[0], hipsWidth[1]);
-              // Double checking measurements make sense as we move...
-              
-              //console.log("Height: ", inputHeight);
-              //console.log("Neck width: ",neckWidth[0]);
-              //console.log("Hips width: ", waistWidth[0]);
-              //console.log("Waist width: ", hipsWidth[0]);
-              //console.log("--------------------------");
-              heading.textContent = navySealBFormula('M', waistCirc,hipsCirc , neckCirc);
-              
+            const personHeight = (majorValues[0] + minorValues[0]) / 2; // Average the heights, should be the same but this reduces error
+
+            const neckMajor = pxToIn(personHeight, inputHeight, majorValues[1]);
+            const neckMinor = pxToIn(personHeight, inputHeight, minorValues[1]);
+            const waistMajor = pxToIn(personHeight, inputHeight, majorValues[2]);
+            const waistMinor = pxToIn(personHeight, inputHeight, minorValues[2]);
+            const hipsMajor = pxToIn(personHeight, inputHeight, majorValues[3]);
+            const hipsMinor = pxToIn(personHeight, inputHeight, minorValues[3]);
+
+            const neckCircumference = ellipseCircumference(neckMajor, neckMinor);
+            const waistCircumference = ellipseCircumference(waistMajor, waistMinor);
+            const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
+
+            const BFEstimate = navySealBFormula(inputGender, personHeight, waistCircumference, hipsCircumference, neckCircumference);
+            setCurrentState(BFEstimate);
+
+
+            heading.textContent = BFEstimate;
             break;
 
           default:
