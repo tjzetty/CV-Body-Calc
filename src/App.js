@@ -20,6 +20,94 @@ let timerInterval = null;
 const personPic = null;
 let picCollect = Array(2).fill(null);
 
+function pixelArrayToValues(dataArray) {
+  let personHeight;
+  let neckWidth;
+  let waistWidth;
+  let hipsWidth;
+
+  // Measurements (coordinates)
+  let height = [-1, -1];
+  let torso = [-1, -1]; // Shoulders, hips - vertical distance measurement
+  let neckMin = [-1, -1];
+  let neckMax = [-1, -1];
+  let waistMin = [-1, -1];
+  let waistMax = [-1, -1];
+  let hipsMin = [-1, -1];
+  let hipsMax = [-1, -1];
+
+  for (var i = 0; i < dataArray.length - 640; i++) {
+    let current = dataArray[i];
+    let next = dataArray[i + 640];
+    let x = i % 640;
+    let y = Math.floor(i / 640);
+
+    let currentIsPerson = current !== -1;
+    let currentIsHead = current === 0 || current === 1;
+    let currentIsBody = current === 13 || current === 12;
+    let belowIsBody = next === 13 || next === 12;
+    let belowIsWaist = next === 14 || next === 16;
+
+    if (currentIsPerson) {
+      height[0] = height[0] < 0 ? y : Math.min(y, height[0]);
+      height[1] = height[1] < 0 ? y : Math.max(y, height[1]);
+    }
+    // grab torso measurement
+    if (currentIsBody) {
+      torso[0] = torso[0] < 0 ? y : Math.min(y, torso[0]);
+      torso[1] = torso[1] < 0 ? y : Math.max(y, torso[1]);
+    }
+    if (currentIsHead && belowIsBody) {
+      // highlight line
+      dataArray[i] = 5;
+      dataArray[i - 640] = 5;
+      // grab neck measurement
+      neckMin[0] = neckMin[0] < 0 ? x : Math.min(x, neckMin[0]);
+      neckMax[0] = neckMax[0] < 0 ? x : Math.max(x, neckMax[0]);
+      neckMin[1] = neckMin[1] < 0 ? x : Math.min(y, neckMin[1]);
+      neckMax[1] = neckMax[1] < 0 ? x : Math.max(y, neckMax[1]);
+    } else if (currentIsBody && belowIsWaist) {
+      // highlight line
+      dataArray[i] = 5;
+      dataArray[i - 640] = 5;
+      // grab hips measurement
+      hipsMin[0] = hipsMin[0] < 0 ? x : Math.min(x, hipsMin[0]);
+      hipsMax[0] = hipsMax[0] < 0 ? x : Math.max(x, hipsMax[0]);
+      hipsMin[1] = hipsMin[1] < 0 ? x : Math.min(y, hipsMin[1]);
+      hipsMax[1] = hipsMax[1] < 0 ? x : Math.max(y, hipsMax[1]);
+    }
+  }
+  // Calculate Waist based at 50% height of torso, that is go down 50% from the shoulders
+  // y = 0 is at top so waist - Shoulders
+  // calculate y from there, then can find array range at that y index
+  let waistHeight = torso[0] + 0.5 * (torso[1] - torso[0]);
+  // Transform to match y level in flat pixel array
+  waistHeight = waistHeight * 640;
+  for (var j = waistHeight; j < waistHeight + 640; j++) {
+    let current = dataArray[j];
+    let x = j % 640;
+    let y = Math.floor(j / 640);
+    let currentIsBody = current === 13 || current === 12;
+
+    if (currentIsBody) {
+      // highlight line
+      dataArray[j] = 5;
+      dataArray[j - 640] = 5;
+      // grab waist measurement
+      waistMin[0] = waistMin[0] < 0 ? x : Math.min(x, waistMin[0]);
+      waistMax[0] = waistMax[0] < 0 ? x : Math.max(x, waistMax[0]);
+      waistMin[1] = waistMin[1] < 0 ? x : Math.min(y, waistMin[1]);
+      waistMax[1] = waistMax[1] < 0 ? x : Math.max(y, waistMax[1]);
+    }
+  }
+
+  personHeight = height[1] - height[0];
+  neckWidth = neckMax[0] - neckMin[0];
+  waistWidth = waistMax[0] - waistMin[0];
+  hipsWidth = hipsMax[0] - hipsMin[0];
+  return [personHeight, neckWidth, waistWidth, hipsWidth];
+}
+
 function ellipseCircumference(major, minor) {
   return Math.PI * (major + minor) * (3 * (major - minor) ** 2 / ((major + minor) ** 2 * (Math.sqrt(-3 * (major - minor) ** 2 / ((major + minor) ** 2) + 4) + 10)) + 1);
 }
@@ -205,108 +293,34 @@ function App() {
             setCurrentState(appState.showInfo);
             // Just some global values to use for calculations 
             dataArray = picCollect[0].data; 
-            let personHeight;
-            let neckWidth;
-            let waistWidth;
-            let hipsWidth;
+            const majorValues = pixelArrayToValues(dataArray);  // [personHeight, neckWidth, waistWidth, hipsWidth]
+            dataArray = picCollect[1].data;
+            const minorValues = pixelArrayToValues(dataArray);  // in pixel not inches
+            
+            const personHeight = (majorValues[0] + minorValues[0]) / 2; // Average the heights, should be the same but this reduces error
 
-            // Measurements (coordinates)
-            let height = [-1, -1];
-            let torso = [-1, -1]; // Shoulders, hips - vertical distance measurement
-            let neckMin = [-1, -1];
-            let neckMax = [-1, -1];
-            let waistMin = [-1, -1];
-            let waistMax = [-1, -1];
-            let hipsMin = [-1, -1];
-            let hipsMax = [-1, -1];
-    
-            for (var i = 0; i < dataArray.length - 640; i++) {
-              let current = dataArray[i];
-              let next = dataArray[i + 640];
-              let x = i % 640;
-              let y = Math.floor(i / 640);
-    
-              let currentIsPerson = current !== -1;
-              let currentIsHead = current === 0 || current === 1;
-              let currentIsBody = current === 13 || current === 12;
-              let belowIsBody = next === 13 || next === 12;
-              let belowIsWaist = next === 14 || next === 16;
-    
-              if (currentIsPerson) {
-                height[0] = height[0] < 0 ? y : Math.min(y, height[0]);
-                height[1] = height[1] < 0 ? y : Math.max(y, height[1]);
-              }
-              // grab torso measurement
-              if (currentIsBody) {
-                torso[0] = torso[0] < 0 ? y : Math.min(y, torso[0]);
-                torso[1] = torso[1] < 0 ? y : Math.max(y, torso[1]);
-              }
-              if (currentIsHead && belowIsBody) {
-                // highlight line
-                person.data[i] = 5;
-                person.data[i - 640] = 5;
-                // grab neck measurement
-                neckMin[0] = neckMin[0] < 0 ? x : Math.min(x, neckMin[0]);
-                neckMax[0] = neckMax[0] < 0 ? x : Math.max(x, neckMax[0]);
-                neckMin[1] = neckMin[1] < 0 ? x : Math.min(y, neckMin[1]);
-                neckMax[1] = neckMax[1] < 0 ? x : Math.max(y, neckMax[1]);
-              } else if (currentIsBody && belowIsWaist) {
-                // highlight line
-                person.data[i] = 5;
-                person.data[i - 640] = 5;
-                // grab hips measurement
-                hipsMin[0] = hipsMin[0] < 0 ? x : Math.min(x, hipsMin[0]);
-                hipsMax[0] = hipsMax[0] < 0 ? x : Math.max(x, hipsMax[0]);
-                hipsMin[1] = hipsMin[1] < 0 ? x : Math.min(y, hipsMin[1]);
-                hipsMax[1] = hipsMax[1] < 0 ? x : Math.max(y, hipsMax[1]);
-              }
-            }
-            // Calculate Waist based at 50% height of torso, that is go down 50% from the shoulders
-            // y = 0 is at top so waist - Shoulders
-            // calculate y from there, then can find array range at that y index
-            let waistHeight = torso[0] + 0.5 * (torso[1] - torso[0]);
-            // Transform to match y level in flat pixel array
-            waistHeight = waistHeight * 640;
-            for (var j = waistHeight; j < waistHeight + 640; j++) {
-              let current = dataArray[j];
-              let x = j % 640;
-              let y = Math.floor(j / 640);
-              let currentIsBody = current === 13 || current === 12;
-    
-              if (currentIsBody) {
-                // highlight line
-                person.data[j] = 5;
-                person.data[j - 640] = 5;
-                // grab waist measurement
-                waistMin[0] = waistMin[0] < 0 ? x : Math.min(x, waistMin[0]);
-                waistMax[0] = waistMax[0] < 0 ? x : Math.max(x, waistMax[0]);
-                waistMin[1] = waistMin[1] < 0 ? x : Math.min(y, waistMin[1]);
-                waistMax[1] = waistMax[1] < 0 ? x : Math.max(y, waistMax[1]);
-              }
-            }
-      
-            // Double checking measurements make sense as we move...
-            personHeight = height[1] - height[0];
-            neckWidth = neckMax[0] - neckMin[0];
-            hipsWidth = hipsMax[0] - hipsMin[0];
-            waistWidth = waistMax[0] - waistMin[0];
-            console.log("Height: ", personHeight);
-            console.log("Neck width: ", pxToIn(personHeight, inputHeight, neckWidth));
-            console.log("Hips width: ", pxToIn(personHeight, inputHeight, hipsWidth));
-            console.log("Waist width: ", pxToIn(personHeight, inputHeight, waistWidth));
-            console.log("--------------------------");
-            heading.textContent = navySealBFormula('M', inputHeight,2*Math.PI*pxToIn(personHeight, inputHeight, waistWidth),2*Math.PI*pxToIn(personHeight, inputHeight, hipsWidth) , 2*Math.PI*pxToIn(personHeight, inputHeight, neckWidth));
+            const neckMajor = pxToIn(personHeight, inputHeight, majorValues[1]);
+            const neckMinor = pxToIn(personHeight, inputHeight, minorValues[1]);
+            const waistMajor = pxToIn(personHeight, inputHeight, majorValues[2]);
+            const waistMinor = pxToIn(personHeight, inputHeight, minorValues[2]);
+            const hipsMajor = pxToIn(personHeight, inputHeight, majorValues[3]);
+            const hipsMinor = pxToIn(personHeight, inputHeight, minorValues[3]);
+
+            const neckCircumference = ellipseCircumference(neckMajor, neckMinor);
+            const waistCircumference = ellipseCircumference(waistMajor, waistMinor);
+            const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
+
+            const BFEstimate = navySealBFormula(inputGender, personHeight, waistCircumference, hipsCircumference, neckCircumference);
+            setCurrentState(BFEstimate);
+
+
+            heading.textContent = BFEstimate;
             break;
 
           default:
             // code block
         } 
-      
 
-
-        
-
-        
 
         // Just some example usages for later :)
         // const elli = ellipseCircumference(parseInt(inputHeight), parseInt(inputWeight));
