@@ -204,11 +204,11 @@ function App() {
           case appState.showInfo:
             setCurrentState(appState.showInfo);
             // Just some global values to use for calculations 
-              dataArray = picCollect[0].data; 
-              let personHeight;
-              let neckWidth;
-              let waistWidth;
-              let hipsWidth;
+            dataArray = picCollect[0].data; 
+            let personHeight;
+            let neckWidth;
+            let waistWidth;
+            let hipsWidth;
 
             // Measurements (coordinates)
             let height = [-1, -1];
@@ -285,17 +285,17 @@ function App() {
               }
             }
       
-              // Double checking measurements make sense as we move...
-              personHeight = height[1] - height[0];
-              neckWidth = neckMax[0] - neckMin[0];
-              hipsWidth = hipsMax[0] - hipsMin[0];
-              waistWidth = waistMax[0] - waistMin[0];
-              console.log("Height: ", personHeight);
-              console.log("Neck width: ", pxToIn(personHeight, inputHeight, neckWidth));
-              console.log("Hips width: ", pxToIn(personHeight, inputHeight, hipsWidth));
-              console.log("Waist width: ", pxToIn(personHeight, inputHeight, waistWidth));
-              console.log("--------------------------");
-              heading.textContent = navySealBFormula('M', inputHeight,2*Math.PI*pxToIn(personHeight, inputHeight, waistWidth),2*Math.PI*pxToIn(personHeight, inputHeight, hipsWidth) , 2*Math.PI*pxToIn(personHeight, inputHeight, neckWidth));
+            // Double checking measurements make sense as we move...
+            personHeight = height[1] - height[0];
+            neckWidth = neckMax[0] - neckMin[0];
+            hipsWidth = hipsMax[0] - hipsMin[0];
+            waistWidth = waistMax[0] - waistMin[0];
+            console.log("Height: ", personHeight);
+            console.log("Neck width: ", pxToIn(personHeight, inputHeight, neckWidth));
+            console.log("Hips width: ", pxToIn(personHeight, inputHeight, hipsWidth));
+            console.log("Waist width: ", pxToIn(personHeight, inputHeight, waistWidth));
+            console.log("--------------------------");
+            heading.textContent = navySealBFormula('M', inputHeight,2*Math.PI*pxToIn(personHeight, inputHeight, waistWidth),2*Math.PI*pxToIn(personHeight, inputHeight, hipsWidth) , 2*Math.PI*pxToIn(personHeight, inputHeight, neckWidth));
             break;
 
           default:
