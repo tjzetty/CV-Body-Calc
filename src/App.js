@@ -125,8 +125,7 @@ function navySealBFormula(gender, height, waist, hip, neck) {
   }
 }
 
-function resetTimer(interval, time)
-{
+function resetTimer(interval, time) {
   clearInterval(interval);
   timerCount = time;
   activeTimer = 1;
@@ -138,11 +137,20 @@ function countDown() {
 
 function App() {
   const webcamRef = useRef(null);
+
+  const getInitialGender = () => {
+    const inputGender = "M";
+    return inputGender;
+  };
+  const getInitialValue = () => {
+    const value = NaN;
+    return value;
+  };
   
   // User inputs gathered using State cause why not
-  const [inputHeight, setInputHeight] = useState('');
-  const [inputAge, setInputAge] = useState('');
-  const [inputGender, setInputGender] = useState('');
+  const [inputHeight, setInputHeight] = useState(getInitialValue);
+  const [inputAge, setInputAge] = useState(getInitialValue);
+  const [inputGender, setInputGender] = useState(getInitialGender);
   const [currentState, setCurrentState] = useState('');
   // Event handlers for user inputs
   const onHeightInput = event => {
@@ -209,8 +217,10 @@ function App() {
           case appState.userData://checks to see if user data is available
           setCurrentState(state);
             if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
-                state = appState.prePicture;
-                setCurrentState(state);          
+              console.log("height: " + inputHeight);
+              console.log("age: " + inputAge);
+              state = appState.prePicture;
+              setCurrentState(state);          
             }
             break;
 
@@ -270,7 +280,6 @@ function App() {
           case appState.afterPicture: // checks to see if done taking all pictures
             if(picCollect[1] != null) {
               state = appState.showInfo;
-              setCurrentState(state);
               heading.textContent = "Calculating Body Fat Percentage";
             } else {
               if(activeTimer === 1) {
@@ -310,7 +319,7 @@ function App() {
               // Calculate estimate
               const BFEstimate = navySealBFormula(inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference);
               console.log("Body Fat Estimate: " + BFEstimate);
-              setCurrentState(BFEstimate);
+              setCurrentState(BFEstimate.toFixed(2) + '%');
               if (!isNaN(BFEstimate) || BFEstimate !== 0 || BFEstimate !== null) 
                 console.warn("Body Fat Estimate was bad.");
 
@@ -355,13 +364,13 @@ function App() {
         value={inputAge}
       />
       <select 
-        defaultValue={'DEFAULT'} 
+        defaultValue={'M'} 
         id="inputGender"
         name="inputGender" 
         onChange={onGenderInput} 
         value={inputGender}
       >
-        <option value="DEFAULT" disabled>Click to select...</option>
+        {/* <option value="DEFAULT" disabled>Click to select...</option> */}
         <option value="M">Male</option>
         <option value="F">Female</option>
       </select>
