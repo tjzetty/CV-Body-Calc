@@ -100,6 +100,7 @@ function pixelArrayToValues(dataArray) {
 }
 
 function ellipseCircumference(major, minor) {
+  // inputs are diameter, forumla uses radius
   major = 0.5 * major;
   minor = 0.5 * minor;
   return Math.PI * (major + minor) * (3 * (major - minor) ** 2 / ((major + minor) ** 2 * (Math.sqrt(-3 * (major - minor) ** 2 / ((major + minor) ** 2) + 4) + 10)) + 1);
