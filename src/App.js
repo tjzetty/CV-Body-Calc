@@ -1,23 +1,21 @@
 import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
-import { tf, conv2d, image, model, Tensor, tensor6d } from "@tensorflow/tfjs";
+import { tf } from "@tensorflow/tfjs";  // eslint-disable-line no-unused-vars
 import * as bodyPix from "@tensorflow-models/body-pix";
 
 import "./App.css";
 
 const appState = {
-  userData : "data",
-  prePicture : "prePic",
-  afterPicture : "aftPic",
-  showInfo : "info"
+  userData : "input your data",
+  prePicture : "taking picture...",
+  afterPicture : "change poses",
+  showInfo : "results"
 };
 
 let state = appState.userData;
 let timerCount = 3;
 let activeTimer = 1;
-let screenShot = null;
 let timerInterval = null;
-const personPic = null;
 let picCollect = Array(2).fill(null);
 
 function pixelArrayToValues(dataArray) {
@@ -102,6 +100,8 @@ function pixelArrayToValues(dataArray) {
 }
 
 function ellipseCircumference(major, minor) {
+  major = 0.5 * major;
+  minor = 0.5 * minor;
   return Math.PI * (major + minor) * (3 * (major - minor) ** 2 / ((major + minor) ** 2 * (Math.sqrt(-3 * (major - minor) ** 2 / ((major + minor) ** 2) + 4) + 10)) + 1);
 }
 
@@ -112,13 +112,16 @@ function pxToIn(heightPx, heightIn, measurement) {
 
 // Inputs in Inches, output a percentage
 function navySealBFormula(gender, height, waist, hip, neck) {
-  let estimate = NaN;
+  console.log("navySealBFormula inputs: [" + gender + ',' + height  + ',' + waist + ',' + hip + ',' + neck + ']');
   if (gender === 'M') {
-    estimate = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+    let estimate = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+    console.log("navySealBFormula: Estimate: " + estimate);
+    return estimate;
   } else if (gender === 'F') {
-    estimate = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+    let estimate = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+    console.log("navySealBFormula: Estimate: " + estimate);
+    return estimate;
   }
-  return estimate;
 }
 
 function resetTimer(interval, time)
@@ -133,7 +136,6 @@ function countDown() {
 }
 
 function App() {
-  let imageSave = null;
   const webcamRef = useRef(null);
   
   // User inputs gathered using State cause why not
@@ -204,45 +206,43 @@ function App() {
         const heading = document.getElementById('show');
         switch(state) {
           case appState.userData://checks to see if user data is available
+          setCurrentState(state);
             if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
                 state = appState.prePicture;
-                //setCurrentState(state);          
+                setCurrentState(state);          
             }
             break;
 
           case appState.prePicture: // stage to check for proper posision
             let confidenceLimit = 0.90;
             let confident;
-            if(picCollect[0] == null)
-              {
-                confident = scores[0]['score']   > confidenceLimit && 
-                         scores[1]['score']   > confidenceLimit && 
-                        scores[12]['score']  > confidenceLimit && 
-                        scores[13]['score']  > confidenceLimit && 
-                         scores[14]['score']  > confidenceLimit && 
-                         scores[16]['score']  > confidenceLimit;
-              }
-              else{
-                confident = (scores[0]['score']   > confidenceLimit || 
-                         scores[1]['score']   > confidenceLimit) && 
-                        (scores[12]['score']  > confidenceLimit ||
-                        scores[13]['score']  > confidenceLimit) && 
-                         (scores[14]['score']  > confidenceLimit ||
-                         scores[16]['score']  > confidenceLimit);
-              }
+            if (picCollect[0] == null){
+              confident = scores[0]['score']   > confidenceLimit && 
+                          scores[1]['score']   > confidenceLimit && 
+                          scores[12]['score']  > confidenceLimit && 
+                          scores[13]['score']  > confidenceLimit && 
+                          scores[14]['score']  > confidenceLimit && 
+                          scores[16]['score']  > confidenceLimit;
+            } else {
+              confident = (scores[0]['score']   > confidenceLimit || 
+                            scores[1]['score']   > confidenceLimit) && 
+                          (scores[12]['score']  > confidenceLimit ||
+                            scores[13]['score']  > confidenceLimit) && 
+                          (scores[14]['score']  > confidenceLimit ||
+                            scores[16]['score']  > confidenceLimit);
+            }
             
-              if(confident) {
-                  // Is timer already ticking?
-                  
-                  if(activeTimer === 1) {
-                    timerInterval = setInterval(countDown,1000);
-                  }
-                  heading.textContent = timerCount;
-                  activeTimer = 0;
-              } else {
-                resetTimer(timerInterval,3);
-                heading.textContent = "Pose";
+            if (confident) {
+              // Is timer already ticking?  
+              if(activeTimer === 1) {
+                timerInterval = setInterval(countDown,1000);
               }
+              heading.textContent = timerCount;
+              activeTimer = 0;
+            } else {
+              resetTimer(timerInterval,3);
+              heading.textContent = "Pose";
+            }
               
             /* This is test code for future overlay
             var contextvar = canvasRef.current.getContext("2d");
@@ -254,15 +254,13 @@ function App() {
             */
             
             // When timer set to 0 save image
-            if(timerCount <= 0)
-            {
+            if(timerCount <= 0) {
               resetTimer(timerInterval,2);
-              state = appState.afterPicture
-              if(picCollect[0] == null)
-              {
+              state = appState.afterPicture;
+              setCurrentState(state);
+              if(picCollect[0] == null) {
                 picCollect[0] = dataArray;
-              }
-              else{
+              } else {
                 picCollect[1] = dataArray;
               }
             }
@@ -271,10 +269,9 @@ function App() {
           case appState.afterPicture: // checks to see if done taking all pictures
             if(picCollect[1] != null) {
               state = appState.showInfo;
-              //setCurrentState(state);
+              setCurrentState(state);
               heading.textContent = "Calculating Body Fat Percentage";
-            }
-            else {
+            } else {
               if(activeTimer === 1) {
                 timerInterval = setInterval(countDown,1000);
                 activeTimer = 0;
@@ -282,40 +279,42 @@ function App() {
               if(timerCount <= 0) {
                 resetTimer(timerInterval,3);
                 state = appState.prePicture;
-                //setCurrentState(state);
-              }
-              else {
+                setCurrentState(state);
+              } else {
                 heading.textContent = "Get Ready for Second Pose";
               }
             }
             break;
 
           case appState.showInfo:
-            //setCurrentState(appState.showInfo);
             // Just some global values to use for calculations 
             const majorValues = pixelArrayToValues(picCollect[0]);  // [personHeight, neckWidth, waistWidth, hipsWidth]
-            console.warn("Values returned from pixelArrayToValues: " + majorValues);
-            const minorValues = pixelArrayToValues(picCollect[1]);  // in pixel not inches            
-            console.warn("Values returned from pixelArrayToValues: " + minorValues);
-            
-            const personHeight = (majorValues[0] + minorValues[0]) / 2; // Average the heights, should be the same but this reduces error
+            const minorValues = pixelArrayToValues(picCollect[1]);  // in pixel not inches 
+            if (!majorValues.includes(0) || !minorValues.includes(0)) {           
+              console.log("Values returned from pixelArrayToValues: " + majorValues);
+              console.log("Values returned from pixelArrayToValues: " + minorValues);
+              // Average the heights, should be the same but this reduces error
+              const personHeight = (majorValues[0] + minorValues[0]) / 2; 
+              // Convert measuremnents to inches
+              const neckMajor = pxToIn(personHeight, inputHeight, majorValues[1]);
+              const neckMinor = pxToIn(personHeight, inputHeight, minorValues[1]);
+              const waistMajor = pxToIn(personHeight, inputHeight, majorValues[2]);
+              const waistMinor = pxToIn(personHeight, inputHeight, minorValues[2]);
+              const hipsMajor = pxToIn(personHeight, inputHeight, majorValues[3]);
+              const hipsMinor = pxToIn(personHeight, inputHeight, minorValues[3]);
+              // Find Circumferences
+              const neckCircumference = ellipseCircumference(neckMajor, neckMinor);
+              const waistCircumference = ellipseCircumference(waistMajor, waistMinor);
+              const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
+              // Calculate estimate
+              const BFEstimate = navySealBFormula(inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference);
+              console.log("Body Fat Estimate: " + BFEstimate);
+              setCurrentState(BFEstimate);
+              if (!isNaN(BFEstimate) || BFEstimate !== 0 || BFEstimate !== null) 
+                console.warn("Body Fat Estimate was bad.");
 
-            const neckMajor = pxToIn(personHeight, inputHeight, majorValues[1]);
-            const neckMinor = pxToIn(personHeight, inputHeight, minorValues[1]);
-            const waistMajor = pxToIn(personHeight, inputHeight, majorValues[2]);
-            const waistMinor = pxToIn(personHeight, inputHeight, minorValues[2]);
-            const hipsMajor = pxToIn(personHeight, inputHeight, majorValues[3]);
-            const hipsMinor = pxToIn(personHeight, inputHeight, minorValues[3]);
-
-            const neckCircumference = ellipseCircumference(neckMajor, neckMinor);
-            const waistCircumference = ellipseCircumference(waistMajor, waistMinor);
-            const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
-
-            const BFEstimate = navySealBFormula(inputGender, personHeight, waistCircumference, hipsCircumference, neckCircumference);
-            setCurrentState(BFEstimate);
-
-
-            heading.textContent = BFEstimate;
+              heading.textContent = BFEstimate;
+            }
             break;
 
           default:
