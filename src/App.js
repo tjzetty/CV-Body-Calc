@@ -164,6 +164,7 @@ function App() {
   };
   const onTryAgain = event => {
     state = appState.userData;
+    picCollect = Array(2).fill(null);
     setCurrentState(state);
   };
 
