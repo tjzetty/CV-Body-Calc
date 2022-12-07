@@ -162,7 +162,10 @@ function App() {
   const onGenderInput = event => {
     setInputGender(event.target.value);
   };
-  
+  const onTryAgain = event => {
+    state = appState.userData;
+    setCurrentState(state);
+  };
 
   const runBodySegment = async () => {
     const net = await bodyPix.load();
@@ -374,6 +377,9 @@ function App() {
         <option value="M">Male</option>
         <option value="F">Female</option>
       </select>
+      <button onClick={onTryAgain}>
+        Try Again?
+      </button>
 
       <h2>Height: {inputHeight}</h2>
       <h2>Age: {inputAge}</h2>
