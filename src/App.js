@@ -115,11 +115,11 @@ function pxToIn(heightPx, heightIn, measurement) {
 function navySealBFormula(gender, height, waist, hip, neck) {
   console.log("navySealBFormula inputs: [" + gender + ',' + height  + ',' + waist + ',' + hip + ',' + neck + ']');
   if (gender === 'M') {
-    let estimate = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+    let estimate = 495 / (1.0324 - 0.19077 * Math.log10(waist * 2.54 - neck * 2.54) + 0.15456 * Math.log10(height * 2.54)) - 450;
     console.log("navySealBFormula: Estimate: " + estimate);
     return estimate;
   } else if (gender === 'F') {
-    let estimate = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+    let estimate = 495 / (1.29579 - 0.35004 * Math.log10(waist * 2.54 + hip * 2.54 - neck * 2.54) + 0.22100 * Math.log10(height * 2.54)) - 450;
     console.log("navySealBFormula: Estimate: " + estimate);
     return estimate;
   }
