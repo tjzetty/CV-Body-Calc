@@ -113,14 +113,14 @@ function pxToIn(heightPx, heightIn, measurement) {
 
 // Inputs in Inches, output a percentage
 function navySealBFormula(gender, height, waist, hip, neck) {
-  console.log("navySealBFormula inputs: [" + gender + ',' + height  + ',' + waist + ',' + hip + ',' + neck + ']');
+  console.log("navySealBFormula inputs: [" + gender + ',' + height.toFixed(2)  + ',' + waist.toFixed(2) + ',' + hip.toFixed(2) + ',' + neck.toFixed(2) + ']');
   if (gender === 'M') {
     let estimate = 495 / (1.0324 - 0.19077 * Math.log10(waist * 2.54 - neck * 2.54) + 0.15456 * Math.log10(height * 2.54)) - 450;
     console.log("navySealBFormula: Estimate: " + estimate);
     return estimate;
   } else if (gender === 'F') {
     let estimate = 495 / (1.29579 - 0.35004 * Math.log10(waist * 2.54 + hip * 2.54 - neck * 2.54) + 0.22100 * Math.log10(height * 2.54)) - 450;
-    console.log("navySealBFormula: Estimate: " + estimate);
+    console.log("navySealBFormula: Estimate: " + estimate.toFixed(2));
     return estimate;
   }
 }
@@ -201,7 +201,7 @@ function App() {
         const person = await net.segmentPersonParts(video, {
           flipHorizontal: false,
           internalResolution: "medium",
-          segmentationThreshold: 0.9,
+          segmentationThreshold: 0.7,
         });
         let scores = person.allPoses[0]['keypoints']; // Different confidence values
         let dataArray = person.data; // Body segmentation on camera
@@ -217,6 +217,7 @@ function App() {
         );
 
         const heading = document.getElementById('show');
+        const timerHeading = document.getElementById('timer');
         switch(state) {
           case appState.userData://checks to see if user data is available
           setCurrentState(state);
@@ -253,10 +254,12 @@ function App() {
                 timerInterval = setInterval(countDown,1000);
               }
               heading.textContent = timerCount;
+              timerHeading.textContent = timerCount;
               activeTimer = 0;
             } else {
               resetTimer(timerInterval,3);
               heading.textContent = "Pose";
+              timerHeading.textContent = "Pose";
             }
               
             /* This is test code for future overlay
@@ -322,7 +325,7 @@ function App() {
               const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
               // Calculate estimate
               const BFEstimate = navySealBFormula(inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference);
-              console.log("Body Fat Estimate: " + BFEstimate);
+              console.log("Body Fat Estimate: " + BFEstimate.toFixed(2));
               setCurrentState(BFEstimate.toFixed(2) + '%');
               if (!isNaN(BFEstimate) || BFEstimate !== 0 || BFEstimate !== null) 
                 console.warn("Body Fat Estimate was bad.");
@@ -350,42 +353,55 @@ function App() {
   runBodySegment();
 
   return (
-    <div className="App">
-      <input
-        type="number"
-        placeholder="? inches"
-        id="inputHeight"
-        name="inputHeight"
-        onChange={onHeightInput}
-        value={inputHeight}
-      />
-      <input
-        type="number"
-        placeholder="? years"
-        id="inputAge"
-        name="inputAge"
-        onChange={onAgeInput}
-        value={inputAge}
-      />
-      <select 
-        defaultValue={'M'} 
-        id="inputGender"
-        name="inputGender" 
-        onChange={onGenderInput} 
-        value={inputGender}
-      >
-        {/* <option value="DEFAULT" disabled>Click to select...</option> */}
-        <option value="M">Male</option>
-        <option value="F">Female</option>
-      </select>
-      <button onClick={onTryAgain}>
-        Try Again?
-      </button>
-
-      <h2>Height: {inputHeight}</h2>
-      <h2>Age: {inputAge}</h2>
-      <h2>Gender: {inputGender}</h2>
-      <h2>State: {currentState}</h2>
+    <div className="App" class="container">
+      <div class="row row-cols-auto">
+        <div class="col">
+          <input
+            type="number"
+            placeholder="? inches"
+            id="inputHeight"
+            name="inputHeight"
+            onChange={onHeightInput}
+            value={inputHeight}
+          />
+          <select 
+            defaultValue={'M'} 
+            id="inputGender"
+            name="inputGender" 
+            onChange={onGenderInput} 
+            value={inputGender}
+          >
+            {/* <option value="DEFAULT" disabled>Click to select...</option> */}
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+          </select>
+        </div>
+      </div>
+      <div class="row row-cols-auto">
+        <div class="col">
+          <input
+            type="number"
+            placeholder="? years"
+            id="inputAge"
+            name="inputAge"
+            onChange={onAgeInput}
+            value={inputAge}
+          />
+          <button onClick={onTryAgain}>
+            Try Again?
+          </button>
+        </div>
+      </div>
+      
+      <div class="row row-cols-auto">
+        { !isNaN(inputHeight) && <h2>Height: {inputHeight},</h2> }
+        { !isNaN(inputAge) && <h2>Age: {inputAge},</h2> }
+        <h2>Gender: {inputGender}</h2>
+      </div>
+      <div class="row row-cols-auto">
+        <h2>State: {currentState},</h2>
+        <h2 id="timer">Camera: {!activeTimer && timerCount} {activeTimer && "waiting..."}</h2>
+      </div>
 
       <header className="App-header">
         <Webcam
