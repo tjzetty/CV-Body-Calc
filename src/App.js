@@ -5,7 +5,7 @@ import * as bodyPix from "@tensorflow-models/body-pix";
 import { initializeApp } from "firebase/app";
 import "./App.css";
 
-const app = initializeApp({
+initializeApp({
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_AUTH_DOMAIN,
   projectId: process.env.REACT_APP_PROJECT_ID,
@@ -122,20 +122,6 @@ function pxToIn(heightPx, heightIn, measurement) {
   return measurement * ratio;
 }
 
-// Inputs in Inches, output a percentage
-function navySealBFormula(gender, height, waist, hip, neck) {
-  console.log("navySealBFormula inputs: [" + gender + ',' + height.toFixed(2)  + ',' + waist.toFixed(2) + ',' + hip.toFixed(2) + ',' + neck.toFixed(2) + ']');
-  if (gender === 'M') {
-    let estimate = 495 / (1.0324 - 0.19077 * Math.log10(waist * 2.54 - neck * 2.54) + 0.15456 * Math.log10(height * 2.54)) - 450;
-    console.log("navySealBFormula: Estimate: " + estimate);
-    return estimate;
-  } else if (gender === 'F') {
-    let estimate = 495 / (1.29579 - 0.35004 * Math.log10(waist * 2.54 + hip * 2.54 - neck * 2.54) + 0.22100 * Math.log10(height * 2.54)) - 450;
-    console.log("navySealBFormula: Estimate: " + estimate.toFixed(2));
-    return estimate;
-  }
-}
-
 function resetTimer(interval, time) {
   clearInterval(interval);
   timerCount = time;
@@ -233,8 +219,6 @@ function App() {
           case appState.userData://checks to see if user data is available
           setCurrentState(state);
             if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
-              console.log("height: " + inputHeight);
-              console.log("age: " + inputAge);
               state = appState.prePicture;
               setCurrentState(state);          
             }
@@ -291,6 +275,7 @@ function App() {
                 picCollect[0] = dataArray;
               } else {
                 picCollect[1] = dataArray;
+                setCurrentState("Calculating Body Fat Percentage");
               }
             }
             break;
@@ -322,23 +307,34 @@ function App() {
               console.log("Values returned from pixelArrayToValues: " + majorValues);
               console.log("Values returned from pixelArrayToValues: " + minorValues);
               // Average the heights, should be the same but this reduces error
-              const personHeight = (majorValues[0] + minorValues[0]) / 2; 
+              const personHeightMajor = (majorValues[0] + minorValues[0]) / 2; 
+              const personHeightMinor = (majorValues[0] + minorValues[0]) / 2; 
               // Convert measuremnents to inches
-              const neckMajor = pxToIn(personHeight, inputHeight, majorValues[1]);
-              const neckMinor = pxToIn(personHeight, inputHeight, minorValues[1]);
-              const waistMajor = pxToIn(personHeight, inputHeight, majorValues[2]);
-              const waistMinor = pxToIn(personHeight, inputHeight, minorValues[2]);
-              const hipsMajor = pxToIn(personHeight, inputHeight, majorValues[3]);
-              const hipsMinor = pxToIn(personHeight, inputHeight, minorValues[3]);
+              console.log("inputHeight: " + inputHeight);
+              const neckMajor = pxToIn(personHeightMajor, inputHeight, majorValues[1]);
+              const neckMinor = pxToIn(personHeightMinor, inputHeight, minorValues[1]);
+              const waistMajor = pxToIn(personHeightMajor, inputHeight, majorValues[2]);
+              const waistMinor = pxToIn(personHeightMinor, inputHeight, minorValues[2]);
+              const hipsMajor = pxToIn(personHeightMajor, inputHeight, majorValues[3]);
+              const hipsMinor = pxToIn(personHeightMinor, inputHeight, minorValues[3]);
               // Find Circumferences
               const neckCircumference = ellipseCircumference(neckMajor, neckMinor);
               const waistCircumference = ellipseCircumference(waistMajor, waistMinor);
               const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
               // Calculate estimate
-              const BFEstimate = navySealBFormula(inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference);
+              console.log("inputGender: " + inputGender);
+              console.log(`[inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference]: [${inputGender}, ${inputHeight}, ${waistCircumference}, ${hipsCircumference}, ${neckCircumference}]`);
+              let BFEstimate = NaN;
+              if (inputGender === "M") {
+                BFEstimate = 495 / (1.0324 - 0.19077 * Math.log10(waistCircumference * 2.54 - neckCircumference * 2.54) + 0.15456 * Math.log10(inputHeight * 2.54)) - 450;
+              } else if (inputGender === "F") {
+                BFEstimate = 495 / (1.29579 - 0.35004 * Math.log10(waistCircumference * 2.54 + hipsCircumference * 2.54 - neckCircumference * 2.54) + 0.22100 * Math.log10(inputHeight * 2.54)) - 450;
+              }
+              //const BFEstimate = navySealBFormula(inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference);
               console.log("Body Fat Estimate: " + BFEstimate.toFixed(2));
+              timerHeading.textContent = "";
               setCurrentState(BFEstimate.toFixed(2) + '%');
-              if (!isNaN(BFEstimate) || BFEstimate !== 0 || BFEstimate !== null) 
+              if (isNaN(BFEstimate)) 
                 console.warn("Body Fat Estimate was bad.");
 
               heading.textContent = BFEstimate;
