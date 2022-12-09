@@ -149,6 +149,11 @@ function App() {
   const [inputAge, setInputAge] = useState(getInitialValue);
   const [inputGender, setInputGender] = useState(getInitialGender);
   const [currentState, setCurrentState] = useState('');
+  const [open, setOpen] = useState(false);
+  // Event handler for app info.
+  const onCollapse = event => {
+    setOpen(!open);
+  };
   // Event handlers for user inputs
   const onHeightInput = event => {
     setInputHeight(event.target.value);
@@ -337,7 +342,7 @@ function App() {
               if (isNaN(BFEstimate)) 
                 console.warn("Body Fat Estimate was bad.");
 
-              heading.textContent = BFEstimate;
+              // heading.textContent = BFEstimate;
             }
             break;
 
@@ -360,8 +365,30 @@ function App() {
   runBodySegment();
 
   return (
-    <div className="App" class="container">
-      <div class="row row-cols-auto">
+    <div className="App" class="container" id="body">
+      <style>{`
+        #collapseDiv {
+          width: 80%;
+          background: #E4E6EB;
+          border-radius: 6px;
+          padding: 10px 10px 10px 10px;
+          margin: 10px 0px 0px 0px;
+        }
+        #body {
+          margin: 10px 10% 10px 10%;
+        }
+        `}</style>
+      <button class="btn btn-primary" onClick={onCollapse} type="button" aria-expanded="false" aria-controls="collapseExample">
+        How to Use the App {open && "▲"}{!open && "▼"}
+      </button>
+      {open && <div id="collapseDiv">
+        {open && <h2>There are 4 phases to this app: data input, front-profile photo, side-profile photo, and results.</h2>}
+        {open && <h3>Data Input: </h3>}{open && <p>Please input your height and age.</p>}
+        {open && <h3>Front-Profile Photo: </h3>}{open && <p>Stand so your whole body is visible in a t-pose facing the camera.</p>}
+        {open && <h3>Side-Profile Photo: </h3>}{open && <p>Stand so your whole body is visible, with your hands to your sides, perpendicular to the camera.</p>}
+        {open && <h3>Results: </h3>}{open && <p>Your body fat will appear as a percentage. For best results wear a tight fitting shirt with good lighting, this is usually accurate ±5%.</p>}
+      </div>}
+      <div class="row row-cols-auto" style={{padding: "10px 0px 10px 0px",}}>
         <div class="col">
           <input
             type="number"
@@ -370,6 +397,7 @@ function App() {
             name="inputHeight"
             onChange={onHeightInput}
             value={inputHeight}
+            style={{margin: "0px 10px 0px 0px",}}
           />
           <select 
             defaultValue={'M'} 
@@ -384,7 +412,7 @@ function App() {
           </select>
         </div>
       </div>
-      <div class="row row-cols-auto">
+      <div class="row row-cols-auto" style={{padding: "10px 0px 10px 0px",}}>
         <div class="col">
           <input
             type="number"
@@ -393,8 +421,9 @@ function App() {
             name="inputAge"
             onChange={onAgeInput}
             value={inputAge}
+            style={{margin: "0px 10px 0px 0px",}}
           />
-          <button onClick={onTryAgain}>
+          <button class="btn btn-primary" onClick={onTryAgain}>
             Try Again?
           </button>
         </div>
@@ -406,11 +435,11 @@ function App() {
         <h2>Gender: {inputGender}</h2>
       </div>
       <div class="row row-cols-auto">
-        <h2>State: {currentState},</h2>
+        <h2>State: {!currentState && "loading..."}{currentState},</h2>
         <h2 id="timer">Camera: {!activeTimer && timerCount} {activeTimer && "waiting..."}</h2>
       </div>
 
-      <header className="App-header">
+      <div id="bodyPix" style={{background: "#E4E6EB", "margin-top": "20px",}}>
         <Webcam
           ref={webcamRef}
           mirrored="true"
@@ -424,6 +453,7 @@ function App() {
             zIndex: 9,
             width: 640,
             height: 480,
+            "border-radius": "6px",
           }}
         />
         <canvas
@@ -438,10 +468,12 @@ function App() {
             zIndex: 9,
             width: 640,
             height: 480,
+            "border-radius": "6px",
           }}
         />
-      </header>
-      <h1 id="show">Input User Info</h1>
+      </div>
+
+      <h1 id="show">{/*Input User Info*/}</h1>
     </div>
   );
 }
