@@ -397,16 +397,16 @@ function App() {
       </button>
       {open && <div id="collapseDiv">
         <h2>There are 4 phases to this app: data input, front-profile photo, side-profile photo, and results.</h2>
-        <h3>Data Input: </h3><p>Please input your height and age.</p>
+        <h3>Data Input: </h3><p>Please input your height, gender, and age.</p>
         <h3>Front-Profile Photo: </h3><p>Stand so your whole body is visible in a t-pose facing the camera.</p>
-        <h3>Side-Profile Photo: </h3><p>Stand so your whole body is visible, with your hands to your sides, perpendicular to the camera.</p>
+        <h3>Side-Profile Photo: </h3><p>Stand so your whole body is visible in a t-pose perpendicular to the camera.</p>
         <h3>Results: </h3><p>Your body fat will appear as a percentage. For best results wear a tight fitting shirt with good lighting, this is usually accurate ±5%.</p>
       </div>}
       {openHelp && <div id="collapseDiv">
         <h2>Common Issues</h2>
         <ul>
           <li><h4>The page can take up to 30 seconds to load, if there is not a live webcam, make sure you give permission.</h4></li>
-          <li><h4>If the app gives you a result that is NaN or negative, please refresh the page and try again.</h4></li>
+          <li><h4>If the app gives you a result that is NaN or negative it can help to use better lighting or a better background. The best results come from a background that contrasts well with your shirt/body such as a black shirt in front of a white wall.</h4></li>
           <li><h4>If the app is just saying "Pose" when trying to take a picture, this means the model has not yet recognized you and is often the result of bad lighting.</h4></li>
         </ul>
       </div>}
