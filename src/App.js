@@ -150,9 +150,15 @@ function App() {
   const [inputGender, setInputGender] = useState(getInitialGender);
   const [currentState, setCurrentState] = useState('');
   const [open, setOpen] = useState(false);
+  const [openHelp, setOpenHelp] = useState(false);
   // Event handler for app info.
   const onCollapse = event => {
+    setOpenHelp(false);
     setOpen(!open);
+  };
+  const onCollapseHelp = event => {
+    setOpen(false);
+    setOpenHelp(!openHelp);
   };
   // Event handlers for user inputs
   const onHeightInput = event => {
@@ -378,15 +384,31 @@ function App() {
           margin: 10px 10% 10px 10%;
         }
         `}</style>
-      <button class="btn btn-primary" onClick={onCollapse} type="button" aria-expanded="false" aria-controls="collapseExample">
+
+      <div class="alert alert-primary" role="alert">
+        If this is your first time using the app please record your results anonomously <a href="https://forms.gle/myrdtqnKj3LzFHew9" class="alert-link" target="_blank" rel="noreferrer">here</a>!
+      </div>
+
+      <button class="btn btn-primary" onClick={onCollapse} type="button" aria-expanded="false" aria-controls="collapseExample" style={{margin: "0px 10px 0px 0px",}}>
         How to Use the App {open && "▲"}{!open && "▼"}
       </button>
+      <button class="btn btn-primary" onClick={onCollapseHelp} type="button" aria-expanded="false" aria-controls="collapseExample">
+        Help {openHelp && "▲"}{!openHelp && "▼"}
+      </button>
       {open && <div id="collapseDiv">
-        {open && <h2>There are 4 phases to this app: data input, front-profile photo, side-profile photo, and results.</h2>}
-        {open && <h3>Data Input: </h3>}{open && <p>Please input your height and age.</p>}
-        {open && <h3>Front-Profile Photo: </h3>}{open && <p>Stand so your whole body is visible in a t-pose facing the camera.</p>}
-        {open && <h3>Side-Profile Photo: </h3>}{open && <p>Stand so your whole body is visible, with your hands to your sides, perpendicular to the camera.</p>}
-        {open && <h3>Results: </h3>}{open && <p>Your body fat will appear as a percentage. For best results wear a tight fitting shirt with good lighting, this is usually accurate ±5%.</p>}
+        <h2>There are 4 phases to this app: data input, front-profile photo, side-profile photo, and results.</h2>
+        <h3>Data Input: </h3><p>Please input your height and age.</p>
+        <h3>Front-Profile Photo: </h3><p>Stand so your whole body is visible in a t-pose facing the camera.</p>
+        <h3>Side-Profile Photo: </h3><p>Stand so your whole body is visible, with your hands to your sides, perpendicular to the camera.</p>
+        <h3>Results: </h3><p>Your body fat will appear as a percentage. For best results wear a tight fitting shirt with good lighting, this is usually accurate ±5%.</p>
+      </div>}
+      {openHelp && <div id="collapseDiv">
+        <h2>Common Issues</h2>
+        <ul>
+          <li><h4>The page can take up to 30 seconds to load, if there is not a live webcam, make sure you give permission.</h4></li>
+          <li><h4>If the app gives you a result that is NaN or negative, please refresh the page and try again.</h4></li>
+          <li><h4>If the app is just saying "Pose" when trying to take a picture, this means the model has not yet recognized you and is often the result of bad lighting.</h4></li>
+        </ul>
       </div>}
       <div class="row row-cols-auto" style={{padding: "10px 0px 10px 0px",}}>
         <div class="col">
