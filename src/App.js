@@ -347,7 +347,7 @@ function App() {
               }
               //const BFEstimate = navySealBFormula(inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference);
               console.log("Body Fat Estimate: " + BFEstimate.toFixed(2));
-              logEvent(analytics, 'BFEstimate', {Estimate: BFEstimate})
+              logEvent(analytics, 'BFEstimate', {Estimate: BFEstimate, Gender: inputGender, Height: inputHeight, Waist_Circ: waistCircumference, Hips_Circ: hipsCircumference, Neck_Circ: neckCircumference});
               timerHeading.textContent = "";
               setCurrentState(BFEstimate.toFixed(2) + '%');
               if (isNaN(BFEstimate)) 
