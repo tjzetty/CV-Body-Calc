@@ -3,7 +3,7 @@ import Webcam from "react-webcam";
 import { tf } from "@tensorflow/tfjs";  // eslint-disable-line no-unused-vars
 import * as bodyPix from "@tensorflow-models/body-pix";
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, logEvent } from "firebase/analytics";
 import "./App.css";
 
 const firebaseConfig = {
@@ -16,7 +16,7 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 const app = initializeApp(firebaseConfig);
-getAnalytics(app);
+const analytics = getAnalytics(app);
 
 
 
@@ -347,6 +347,7 @@ function App() {
               }
               //const BFEstimate = navySealBFormula(inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference);
               console.log("Body Fat Estimate: " + BFEstimate.toFixed(2));
+              logEvent(analytics, 'BFEstimate', {Estimate: BFEstimate})
               timerHeading.textContent = "";
               setCurrentState(BFEstimate.toFixed(2) + '%');
               if (isNaN(BFEstimate)) 
