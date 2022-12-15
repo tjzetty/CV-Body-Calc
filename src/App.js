@@ -187,6 +187,9 @@ function App() {
       setInterval(() => {
         detect(net);
       }, 100);
+    } else {
+      state = appState.userData;
+      setCurrentState(state);
     }
   };
   const canvasRef = useRef(null);
@@ -275,7 +278,7 @@ function App() {
               } else {
                 picCollect[1] = dataArray;
                 setCurrentState("Calculating Body Fat Percentage");
-                heading.textContent = "";
+                heading.textContent = "Help us improve by anonymously sharing your results at the survey linked in blue at the top of the page.";
               }
               state = appState.afterPicture;
               setCurrentState(state);
@@ -396,9 +399,8 @@ function App() {
       {openHelp && <div id="collapseDiv">
         <h2>Common Issues</h2>
         <ul>
-          <li><h4>The page can take up to 30 seconds to load, if there is not a live webcam, make sure you give permission.</h4></li>
-          <li><h4>If the app gives you a result that is NaN or negative it can help to use better lighting or a better background. The best results come from a background that contrasts well with your shirt/body such as a black shirt in front of a white wall.</h4></li>
-          <li><h4>If the app is just saying "Pose" when trying to take a picture, this means the model has not yet recognized you and is often the result of bad lighting.</h4></li>
+          <li><h5>If the app gives you a result that is NaN or negative it can help to use better lighting or a better background. The best results come from a background that contrasts well with your shirt/body such as a black shirt in front of a white wall.</h5></li>
+          <li><h5>If the app is just saying "Pose" when trying to take a picture, this means the model has not yet recognized you and is often the result of bad lighting.</h5></li>
         </ul>
       </div>}
       <div class="row row-cols-auto" style={{padding: "10px 0px 10px 0px",}}>
