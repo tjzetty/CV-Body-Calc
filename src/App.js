@@ -183,9 +183,11 @@ function App() {
   const runBodySegment = async () => {
     const net = await bodyPix.load();
     // console.log("Bodypix model loaded.")
-    setInterval(() => {
-      detect(net);
-    }, 0);
+    if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
+      setInterval(() => {
+        detect(net);
+      }, 100);
+    }
   };
   const canvasRef = useRef(null);
   
@@ -197,29 +199,32 @@ function App() {
         webcamRef !== null &&
         webcamRef.current.video.readyState === 4
       ) {
-        // Get video properties
-        const video = webcamRef.current.video;
-        const videoHeight = video.videoHeight;
-        const videoWidth = video.videoWidth;
-        // Set video width and height
-        webcamRef.current.video.height = videoHeight;
-        webcamRef.current.video.width = videoWidth;
-        // Set canvas width and height
-        canvasRef.current.height = videoHeight;
-        canvasRef.current.width = videoWidth;
-       // canvasRef.current.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        //imageSave = canvasRef.toDataURL();
+      // Get video properties
+      const video = webcamRef.current.video;
+      const videoHeight = video.videoHeight;
+      const videoWidth = video.videoWidth;
+      // Set video width and height
+      webcamRef.current.video.height = videoHeight;
+      webcamRef.current.video.width = videoWidth;
+      // Set canvas width and height
+      canvasRef.current.height = videoHeight;
+      canvasRef.current.width = videoWidth;
+
+      let person = null;
+      let scores = null;
+      let dataArray = null;
+      if (state === appState.prePicture) {
         // Make detections
-        const person = await net.segmentPersonParts(video, {
+        person = await net.segmentPersonParts(video, {
           flipHorizontal: false,
           internalResolution: "medium",
           segmentationThreshold: 0.7,
         });
-        let scores = person.allPoses[0]['keypoints']; // Different confidence values
-        let dataArray = person.data; // Body segmentation on camera
+        scores = person.allPoses[0]['keypoints']; // Different confidence values
+        dataArray = person.data; // Body segmentation on camera
         // Draw detections
         const coloredPartImage = bodyPix.toColoredPartMask(person);
-         bodyPix.drawMask(
+        bodyPix.drawMask(
           canvasRef.current,
           video,
           coloredPartImage,
@@ -227,12 +232,13 @@ function App() {
           0,
           true
         );
+      }
 
         const heading = document.getElementById('show');
         const timerHeading = document.getElementById('timer');
         switch(state) {
           case appState.userData://checks to see if user data is available
-          setCurrentState(state);
+            setCurrentState(state);
             if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
               state = appState.prePicture;
               setCurrentState(state);          
@@ -241,27 +247,16 @@ function App() {
 
           case appState.prePicture: // stage to check for proper posision
             let confidenceLimit = 0.90;
-            let confident;
-            if (picCollect[0] == null){
-              confident = scores[0]['score']   > confidenceLimit && 
-                          scores[1]['score']   > confidenceLimit && 
-                          scores[12]['score']  > confidenceLimit && 
-                          scores[13]['score']  > confidenceLimit && 
-                          scores[14]['score']  > confidenceLimit && 
-                          scores[16]['score']  > confidenceLimit;
-            } else {
-              confident = (scores[0]['score']   > confidenceLimit || 
-                            scores[1]['score']   > confidenceLimit) && 
-                          (scores[12]['score']  > confidenceLimit ||
-                            scores[13]['score']  > confidenceLimit) && 
-                          (scores[14]['score']  > confidenceLimit ||
-                            scores[16]['score']  > confidenceLimit);
-            }
+            let confident = scores[0]['score']   > confidenceLimit && 
+                           (scores[5]['score']   > confidenceLimit ||
+                            scores[6]['score']   > confidenceLimit) && 
+                           (scores[11]['score']  > confidenceLimit ||
+                            scores[12]['score']  > confidenceLimit);
             
             if (confident) {
               // Is timer already ticking?  
               if(activeTimer === 1) {
-                timerInterval = setInterval(countDown,1000);
+                timerInterval = setInterval(countDown, 1000);
               }
               heading.textContent = timerCount;
               timerHeading.textContent = timerCount;
@@ -271,34 +266,25 @@ function App() {
               heading.textContent = "Pose";
               timerHeading.textContent = "Pose";
             }
-              
-            /* This is test code for future overlay
-            var contextvar = canvasRef.current.getContext("2d");
-            var imageObj = new Image();
-            imageObj.onload=function(){
-              contextvar.drawImage(imageObj,10,10);
-            }
-            imageObj.src = "http://wannabevc.files.wordpress.com/2010/09/im-cool.jpg";
-            */
             
             // When timer set to 0 save image
             if(timerCount <= 0) {
-              resetTimer(timerInterval,2);
-              state = appState.afterPicture;
-              setCurrentState(state);
+              resetTimer(timerInterval, 2);
               if(picCollect[0] == null) {
                 picCollect[0] = dataArray;
               } else {
                 picCollect[1] = dataArray;
                 setCurrentState("Calculating Body Fat Percentage");
+                heading.textContent = "";
               }
+              state = appState.afterPicture;
+              setCurrentState(state);
             }
             break;
 
           case appState.afterPicture: // checks to see if done taking all pictures
             if(picCollect[1] != null) {
               state = appState.showInfo;
-              heading.textContent = "Calculating Body Fat Percentage";
             } else {
               if(activeTimer === 1) {
                 timerInterval = setInterval(countDown,1000);
@@ -466,6 +452,8 @@ function App() {
         <h2 id="timer">Camera: {!activeTimer && timerCount} {activeTimer && "waiting..."}</h2>
       </div>
 
+      <h1 id="show">{/*Input User Info*/}</h1>
+
       <div id="bodyPix" style={{background: "#E4E6EB", "margin-top": "20px",}}>
         <Webcam
           ref={webcamRef}
@@ -499,8 +487,6 @@ function App() {
           }}
         />
       </div>
-
-      <h1 id="show">{/*Input User Info*/}</h1>
     </div>
   );
 }
