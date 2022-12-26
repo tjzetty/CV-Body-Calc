@@ -14,24 +14,22 @@ const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
 const images = [
   {
-    label: "San Francisco – Oakland Bay Bridge, United States",
-    imgPath:
-      "https://images.unsplash.com/photo-1537944434965-cf4679d1a598?auto=format&fit=crop&w=400&h=250&q=60",
+    label: "Input your data",
+    imgPath: process.env.PUBLIC_URL + "/carousel-images/data-input.png",
   },
   {
-    label: "Bird",
+    label: "Take a front-profile photo",
     imgPath:
       "https://images.unsplash.com/photo-1538032746644-0212e812a9e7?auto=format&fit=crop&w=400&h=250&q=60",
   },
   {
-    label: "Bali, Indonesia",
+    label: "Take a side-profile photo",
     imgPath:
       "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=400&h=250",
   },
   {
-    label: "Goč, Serbia",
-    imgPath:
-      "https://images.unsplash.com/photo-1512341689857-198e7e2f3ca8?auto=format&fit=crop&w=400&h=250&q=60",
+    label: "Get your results!",
+    imgPath: process.env.PUBLIC_URL + "/carousel-images/results.png",
   },
 ];
 
@@ -53,7 +51,7 @@ function SwipeableTextMobileStepper() {
   };
 
   return (
-    <Box sx={{ maxWidth: 400, flexGrow: 1 }}>
+    <Box sx={{ maxWidth: "50%", flexGrow: 1 }}>
       <Paper
         square
         elevation={0}
@@ -83,6 +81,8 @@ function SwipeableTextMobileStepper() {
                   display: "block",
                   maxWidth: 400,
                   overflow: "hidden",
+                  marginLeft: "auto",
+                  marginRight: "auto",
                   width: "100%",
                 }}
                 src={step.imgPath}
