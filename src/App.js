@@ -147,19 +147,12 @@ function countDown() {
 function App() {
   const webcamRef = useRef(null);
 
-  const getInitialGender = () => {
-    const inputGender = "M";
-    return inputGender;
-  };
-  const getInitialValue = () => {
-    const value = NaN;
-    return value;
-  };
-
   // User inputs gathered using State cause why not
-  const [inputHeight, setInputHeight] = useState(getInitialValue);
-  const [inputAge, setInputAge] = useState(getInitialValue);
-  const [inputGender, setInputGender] = useState(getInitialGender);
+  const [inputHeight, setInputHeight] = useState(NaN);
+  const [inputAge, setInputAge] = useState(NaN);
+  const [inputGender, setInputGender] = useState("DEFAULT");
+  const [mSelect, setMSelect] = useState("btn btn-outline-primary");
+  const [fSelect, setFSelect] = useState("btn btn-outline-primary");
   const [currentState, setCurrentState] = useState("");
   const [open, setOpen] = useState(false);
   const [openHelp, setOpenHelp] = useState(false);
@@ -179,9 +172,16 @@ function App() {
   const onAgeInput = (event) => {
     setInputAge(event.target.value);
   };
-  const onGenderInput = (event) => {
-    setInputGender(event.target.value);
-  };
+  const onMSelect = (event) => {
+    setMSelect("btn btn-primary");
+    setFSelect("btn btn-outline-primary");
+    setInputGender("M");
+  }
+  const onFSelect = (event) => {
+    setFSelect("btn btn-primary");
+    setMSelect("btn btn-outline-primary");
+    setInputGender("F");
+  }
   const onTryAgain = (event) => {
     state = appState.userData;
     picCollect = Array(2).fill(null);
@@ -192,7 +192,6 @@ function App() {
     const net = await bodyPix.load();
     // console.log("Bodypix model loaded.")
     if (
-      !isNaN(inputHeight) &&
       !isNaN(inputHeight) &&
       !isNaN(inputAge) &&
       (inputGender === "M" || inputGender === "F")
@@ -518,7 +517,42 @@ function App() {
         <SwipeableTextMobileStepper />
         <BottomScroller />
       </div>
-      <div id="Inputs"></div>
+      <div id="Inputs">
+        <h1>First we need some data...</h1>
+        <input
+          type="number"
+          placeholder="? inches"
+          id="inputHeight"
+          name="inputHeight"
+          onChange={onHeightInput}
+          value={inputHeight}
+          style={{ margin: "0px 10px 0px 0px" }}
+        />
+        <input
+          type="number"
+          placeholder="? years"
+          id="inputAge"
+          name="inputAge"
+          onChange={onAgeInput}
+          value={inputAge}
+          style={{ margin: "0px 10px 0px 0px" }}
+        />
+        <button
+          id="fSelect"
+          name="fSelect"
+          type="button"
+          class={fSelect}
+          onClick={onFSelect}
+        />
+        <button
+          id="mSelect"
+          name="mSelect"
+          type="button"
+          class={mSelect}
+          onClick={onMSelect}
+        />
+        <BottomScroller />
+      </div>
       <div id="Measuring">
         <div
           id="bodyPix"
