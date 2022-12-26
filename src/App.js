@@ -6,6 +6,7 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics, logEvent } from "firebase/analytics";
 import "./App.css";
 import SwipeableTextMobileStepper from "./Components/Carousel.js";
+import BottomScroller from "./Components/BottomScroller.js";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -451,7 +452,15 @@ function App() {
         {`
         html, body, Header, HowTo, Inputs {
           background: #424242;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
+
+        ::-webkit-scrollbar {
+          display: none;
+          width: 100px;
+        }
+
         #body {
           margin-top: 5vh;
           margin-left: 10%;
@@ -467,9 +476,10 @@ function App() {
         }
         #HowTo {
           margin-top: 15vh;
-          height: 95vh;
+          height: 85vh;
 
           display: flex;
+          gap: 25px;
           flex-direction: column;
           align-items: center;
         }
@@ -480,7 +490,20 @@ function App() {
           display: inline-block;
         }
         #Inputs {
+          margin-top: 15vh;
+          height: 85vh;
 
+          display: flex;
+          gap: 25px;
+          flex-direction: column;
+          align-items: center;
+        }
+        #Inputs h1 {
+          color: white;
+        }
+        #Inputs BottomScroller {
+          display: flex;
+	        align-items: flex-end;
         }
         #Measuring {
 
@@ -493,6 +516,7 @@ function App() {
       <div id="HowTo">
         <h1>How to use :)</h1>
         <SwipeableTextMobileStepper />
+        <BottomScroller />
       </div>
       <div id="Inputs"></div>
       <div id="Measuring">
