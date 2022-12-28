@@ -176,12 +176,12 @@ function App() {
     setMSelect("btn btn-primary");
     setFSelect("btn btn-outline-primary");
     setInputGender("M");
-  }
+  };
   const onFSelect = (event) => {
     setFSelect("btn btn-primary");
     setMSelect("btn btn-outline-primary");
     setInputGender("F");
-  }
+  };
   const onTryAgain = (event) => {
     state = appState.userData;
     picCollect = Array(2).fill(null);
@@ -485,9 +485,6 @@ function App() {
         #HowTo h1 {
           color: white;
         }
-        #HowTo SwipeableText {
-          display: inline-block;
-        }
         #Inputs {
           margin-top: 15vh;
           height: 85vh;
@@ -499,6 +496,27 @@ function App() {
         }
         #Inputs h1 {
           color: white;
+        }
+        #pill {
+          background-color: black !important;
+        }
+        #Inputs input {
+          height: 50px;
+        }
+        #pill {
+          padding: 10px 20px 10px 20px;
+          border-radius: 500px;
+        }
+        #pill button {
+          height: 50px;
+          width: 100px;
+        }
+        #fSelect {
+          margin-right: 10px;
+        }
+        .btn-outline-primary {
+          background-color: #969696 !important;
+          --bs-btn-border-color: #969696 !important;
         }
         #Inputs BottomScroller {
           display: flex;
@@ -519,38 +537,48 @@ function App() {
       </div>
       <div id="Inputs">
         <h1>First we need some data...</h1>
-        <input
-          type="number"
-          placeholder="? inches"
-          id="inputHeight"
-          name="inputHeight"
-          onChange={onHeightInput}
-          value={inputHeight}
-          style={{ margin: "0px 10px 0px 0px" }}
-        />
-        <input
-          type="number"
-          placeholder="? years"
-          id="inputAge"
-          name="inputAge"
-          onChange={onAgeInput}
-          value={inputAge}
-          style={{ margin: "0px 10px 0px 0px" }}
-        />
-        <button
-          id="fSelect"
-          name="fSelect"
-          type="button"
-          class={fSelect}
-          onClick={onFSelect}
-        />
-        <button
-          id="mSelect"
-          name="mSelect"
-          type="button"
-          class={mSelect}
-          onClick={onMSelect}
-        />
+        <div id="pill">
+          <input
+            type="number"
+            placeholder="? inches"
+            id="inputHeight"
+            name="inputHeight"
+            onChange={onHeightInput}
+            value={inputHeight}
+            style={{ margin: "0px 10px 0px 0px" }}
+          />
+        </div>
+        <div id="pill">
+          <input
+            type="number"
+            placeholder="? years"
+            id="inputAge"
+            name="inputAge"
+            onChange={onAgeInput}
+            value={inputAge}
+            style={{ margin: "0px 10px 0px 0px" }}
+          />
+        </div>
+        <div id="pill">
+          <button
+            id="fSelect"
+            name="fSelect"
+            type="button"
+            class={fSelect}
+            onClick={onFSelect}
+          >
+            F
+          </button>
+          <button
+            id="mSelect"
+            name="mSelect"
+            type="button"
+            class={mSelect}
+            onClick={onMSelect}
+          >
+            M
+          </button>
+        </div>
         <BottomScroller />
       </div>
       <div id="Measuring">
