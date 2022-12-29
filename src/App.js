@@ -148,7 +148,9 @@ function App() {
   const webcamRef = useRef(null);
 
   // User inputs gathered using State cause why not
-  const [inputHeight, setInputHeight] = useState(NaN);
+  const [inputInch, setInputInch] = useState(NaN);
+  const [inputFeet, setInputFeet] = useState(NaN);
+  const [inputHeight, setInputHeight] = useState(0);
   const [inputAge, setInputAge] = useState(NaN);
   const [inputGender, setInputGender] = useState("DEFAULT");
   const [mSelect, setMSelect] = useState("btn btn-outline-primary");
@@ -166,8 +168,15 @@ function App() {
     setOpenHelp(!openHelp);
   };
   // Event handlers for user inputs
-  const onHeightInput = (event) => {
-    setInputHeight(event.target.value);
+  const onInchInput = (event) => {
+    setInputInch(event.target.value);
+    if (isNaN(inputFeet)) setInputHeight(inputInch);
+    else setInputHeight(inputInch + inputFeet * 12);
+  };
+  const onFeetInput = (event) => {
+    setInputFeet(event.target.value);
+    if (isNaN(inputInch)) setInputHeight(inputFeet * 12);
+    else setInputHeight(inputInch + inputFeet * 12);
   };
   const onAgeInput = (event) => {
     setInputAge(event.target.value);
@@ -192,7 +201,8 @@ function App() {
     const net = await bodyPix.load();
     // console.log("Bodypix model loaded.")
     if (
-      !isNaN(inputHeight) &&
+      !isNaN(inputInch) &&
+      !isNaN(inputFeet) &&
       !isNaN(inputAge) &&
       (inputGender === "M" || inputGender === "F")
     ) {
@@ -255,8 +265,8 @@ function App() {
           case appState.userData: //checks to see if user data is available
             setCurrentState(state);
             if (
-              !isNaN(inputHeight) &&
-              !isNaN(inputHeight) &&
+              !isNaN(inputInch) &&
+              !isNaN(inputFeet) &&
               !isNaN(inputAge) &&
               (inputGender === "M" || inputGender === "F")
             ) {
@@ -546,24 +556,31 @@ function App() {
           <h2>Height:</h2>
           <input
             type="number"
-            placeholder="? inches"
-            id="inputHeight"
-            name="inputHeight"
-            onChange={onHeightInput}
-            value={inputHeight}
-            style={{ margin: "0px 10px 0px 0px" }}
+            placeholder="? ft"
+            id="inputFeet"
+            name="inputFeet"
+            onChange={onFeetInput}
+            value={inputFeet}
+            style={{ marginRight: "10px" }}
+          />
+          <input
+            type="number"
+            placeholder="? in"
+            id="inputInch"
+            name="inputInch"
+            onChange={onInchInput}
+            value={inputInch}
           />
         </div>
         <div id="pill">
           <h2>Age:</h2>
           <input
             type="number"
-            placeholder="? years"
+            placeholder="? yrs"
             id="inputAge"
             name="inputAge"
             onChange={onAgeInput}
             value={inputAge}
-            style={{ margin: "0px 10px 0px 0px" }}
           />
         </div>
         <div id="pill">
