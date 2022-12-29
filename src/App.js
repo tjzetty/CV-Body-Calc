@@ -494,18 +494,23 @@ function App() {
           flex-direction: column;
           align-items: center;
         }
-        #Inputs h1 {
+        #Inputs h1, h2 {
           color: white;
+        }
+        #Inputs h2 {
+          width: 40%;
         }
         #pill {
           background-color: black !important;
+          padding: 10px 20px 10px 20px;
+          border-radius: 500px;
+          width: 400px;
+          display: flex;
+          flex-direction: row;
         }
         #Inputs input {
           height: 50px;
-        }
-        #pill {
-          padding: 10px 20px 10px 20px;
-          border-radius: 500px;
+          width: 100px;
         }
         #pill button {
           height: 50px;
@@ -538,6 +543,7 @@ function App() {
       <div id="Inputs">
         <h1>First we need some data...</h1>
         <div id="pill">
+          <h2>Height:</h2>
           <input
             type="number"
             placeholder="? inches"
@@ -549,6 +555,7 @@ function App() {
           />
         </div>
         <div id="pill">
+          <h2>Age:</h2>
           <input
             type="number"
             placeholder="? years"
@@ -560,6 +567,7 @@ function App() {
           />
         </div>
         <div id="pill">
+          <h2>Gender:</h2>
           <button
             id="fSelect"
             name="fSelect"
