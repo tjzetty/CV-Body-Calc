@@ -503,6 +503,7 @@ function App() {
           gap: 25px;
           flex-direction: column;
           align-items: center;
+          position: relative;
         }
         #Inputs h1, h2 {
           color: white;
@@ -518,13 +519,15 @@ function App() {
           display: flex;
           flex-direction: row;
         }
-        #Inputs input {
+        #pill input, button {
           height: 50px;
           width: 100px;
+          border-radius: 0.375rem;
+        }
+        #pill input {
+          border-style: none;
         }
         #pill button {
-          height: 50px;
-          width: 100px;
         }
         #fSelect {
           margin-right: 10px;
@@ -532,10 +535,6 @@ function App() {
         .btn-outline-primary {
           background-color: #969696 !important;
           --bs-btn-border-color: #969696 !important;
-        }
-        #Inputs BottomScroller {
-          display: flex;
-	        align-items: flex-end;
         }
         #Measuring {
 
