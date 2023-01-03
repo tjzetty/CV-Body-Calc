@@ -457,154 +457,106 @@ function App() {
 
   return (
     <div className="App" class="container" id="body">
-      <style>
-        {`
-        html, body, Header, HowTo, Inputs {
-          background: #424242;
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-
-        ::-webkit-scrollbar {
-          display: none;
-          width: 100px;
-        }
-
-        #body {
-          margin-top: 5vh;
-          margin-left: 10%;
-          margin-right: 10%;
-        }
-        #Header {
-          top: 0;
-          left: 10%;
-          color: #FF0A0A;
-          position: fixed;
-          width: 100%;
-          alight: left;
-        }
-        #HowTo {
-          margin-top: 15vh;
-          height: 85vh;
-
-          display: flex;
-          gap: 25px;
-          flex-direction: column;
-          align-items: center;
-        }
-        #HowTo h1 {
-          color: white;
-        }
-        #Inputs {
-          margin-top: 15vh;
-          height: 85vh;
-
-          display: flex;
-          gap: 25px;
-          flex-direction: column;
-          align-items: center;
-          position: relative;
-        }
-        #Inputs h1, h2 {
-          color: white;
-        }
-        #Inputs h2 {
-          width: 40%;
-        }
-        #pill {
-          background-color: black !important;
-          padding: 10px 20px 10px 20px;
-          border-radius: 500px;
-          width: 400px;
-          display: flex;
-          flex-direction: row;
-        }
-        #pill input, button {
-          height: 50px;
-          width: 100px;
-          border-radius: 0.375rem;
-        }
-        #pill input {
-          border-style: none;
-        }
-        #pill button {
-        }
-        #fSelect {
-          margin-right: 10px;
-        }
-        .btn-outline-primary {
-          background-color: #969696 !important;
-          --bs-btn-border-color: #969696 !important;
-        }
-        #Measuring {
-
-        }
-        `}
-      </style>
       <div id="Header">
         <h1>Body Fat Estimator</h1>
       </div>
+
       <div id="HowTo">
         <h1>How to use :)</h1>
         <SwipeableTextMobileStepper />
         <BottomScroller />
       </div>
+
       <div id="Inputs">
         <h1>First we need some data...</h1>
-        <div id="pill">
-          <h2>Height:</h2>
-          <input
-            type="number"
-            placeholder="? ft"
-            id="inputFeet"
-            name="inputFeet"
-            onChange={onFeetInput}
-            value={inputFeet}
-            style={{ marginRight: "10px" }}
-          />
-          <input
-            type="number"
-            placeholder="? in"
-            id="inputInch"
-            name="inputInch"
-            onChange={onInchInput}
-            value={inputInch}
-          />
-        </div>
-        <div id="pill">
-          <h2>Age:</h2>
-          <input
-            type="number"
-            placeholder="? yrs"
-            id="inputAge"
-            name="inputAge"
-            onChange={onAgeInput}
-            value={inputAge}
-          />
-        </div>
-        <div id="pill">
-          <h2>Gender:</h2>
+        <div id="inputContainer">
+          <div id="pill">
+            <h2>Height:</h2>
+            <input
+              type="number"
+              placeholder="? ft"
+              id="inputFeet"
+              name="inputFeet"
+              onChange={onFeetInput}
+              value={inputFeet}
+              style={{ marginRight: "10px" }}
+            />
+            <input
+              type="number"
+              placeholder="? in"
+              id="inputInch"
+              name="inputInch"
+              onChange={onInchInput}
+              value={inputInch}
+            />
+          </div>
           <button
-            id="fSelect"
-            name="fSelect"
+            id="moreInfo"
+            name="moreInfo"
             type="button"
-            class={fSelect}
-            onClick={onFSelect}
+            class="moreInfo"
+            onClick="onMoreInfo"
           >
-            F
+            ?
           </button>
+        </div>
+        <div id="inputContainer">
+          <div id="pill">
+            <h2>Age:</h2>
+            <input
+              type="number"
+              placeholder="? yrs"
+              id="inputAge"
+              name="inputAge"
+              onChange={onAgeInput}
+              value={inputAge}
+            />
+          </div>
           <button
-            id="mSelect"
-            name="mSelect"
+            id="moreInfo"
+            name="moreInfo"
             type="button"
-            class={mSelect}
-            onClick={onMSelect}
+            class="moreInfo"
+            onClick="onMoreInfo"
           >
-            M
+            ?
+          </button>
+        </div>
+        <div id="inputContainer">
+          <div id="pill">
+            <h2>Gender:</h2>
+            <button
+              id="fSelect"
+              name="fSelect"
+              type="button"
+              class={fSelect}
+              onClick={onFSelect}
+            >
+              F
+            </button>
+            <button
+              id="mSelect"
+              name="mSelect"
+              type="button"
+              class={mSelect}
+              onClick={onMSelect}
+            >
+              M
+            </button>
+          </div>
+          <button
+            id="moreInfo"
+            name="moreInfo"
+            type="button"
+            class="moreInfo"
+            onClick="onMoreInfo"
+          >
+            ?
           </button>
         </div>
         <BottomScroller />
       </div>
+
       <div id="Measuring">
         <div
           id="bodyPix"
@@ -643,7 +595,9 @@ function App() {
           />
         </div>
       </div>
-      <div id="Results"></div>
+
+      <div id="Results">
+      </div>
     </div>
   );
 }
