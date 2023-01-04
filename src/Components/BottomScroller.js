@@ -4,9 +4,8 @@ import BottomNavigation from "@mui/material/BottomNavigation";
 import Button from "@mui/material/Button";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 
-export default function BottomScroller() {
+export default function BottomScroller({ message }) {
   const [value, setValue] = React.useState(0);
-
   return (
     <Box
       sx={{
@@ -34,7 +33,7 @@ export default function BottomScroller() {
             fontSize="large"
             sx={{ contentAlign: "left", display: "flex", alignItems: "left" }}
           />
-          Let's give it a try
+          {message}
           <KeyboardDoubleArrowDownIcon fontSize="large" />
         </Button>
       </BottomNavigation>

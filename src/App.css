@@ -1,6 +1,7 @@
-html, body {
-  margin:0;
-  padding:0;
+html,
+body {
+  margin: 0;
+  padding: 0;
   background-color: #424242 !important;
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -19,7 +20,7 @@ html, body {
 #Header {
   top: 0;
   left: 10%;
-  color: #FF0A0A;
+  color: #ff0a0a;
   position: fixed;
   width: 100%;
 }
@@ -46,7 +47,7 @@ html, body {
   align-items: center;
   position: relative;
 }
-#Inputs h1, 
+#Inputs h1,
 #Inputs h2 {
   color: white;
 }
@@ -66,7 +67,7 @@ html, body {
   display: flex;
   flex-direction: row;
 }
-#pill input, 
+#pill input,
 #pill button {
   height: 50px;
   width: 100px;
@@ -82,7 +83,7 @@ html, body {
   height: 40px;
   border-radius: 50%;
   margin-left: 10px;
-  background-color: #00BEFA;
+  background-color: #00befa;
   border-style: none;
   color: white;
 }
@@ -94,5 +95,4 @@ html, body {
   --bs-btn-border-color: #969696 !important;
 }
 #Measuring {
-
 }

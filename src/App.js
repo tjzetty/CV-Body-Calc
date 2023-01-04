@@ -123,8 +123,7 @@ function ellipseCircumference(major, minor) {
     (major + minor) *
     ((3 * (major - minor) ** 2) /
       ((major + minor) ** 2 *
-        (Math.sqrt((-3 * (major - minor) ** 2) / (major + minor) ** 2 + 4) +
-          10)) +
+        (Math.sqrt((-3 * (major - minor) ** 2) / (major + minor) ** 2 + 4) + 10)) +
       1)
   );
 }
@@ -158,6 +157,7 @@ function App() {
   const [currentState, setCurrentState] = useState("");
   const [open, setOpen] = useState(false);
   const [openHelp, setOpenHelp] = useState(false);
+  const [moreInfo, setMoreInfo] = useState(0); // Represent first with 1, second with 10, thrid with 100
   // Event handler for app info.
   const onCollapse = (event) => {
     setOpenHelp(false);
@@ -190,6 +190,17 @@ function App() {
     setFSelect("btn btn-primary");
     setMSelect("btn btn-outline-primary");
     setInputGender("F");
+  };
+  const onMoreInfo = (event) => {
+    const target = event.target;
+    if (target.name === "moreInfoHeight")
+      setMoreInfo(moreInfo % 2 === 0 ? moreInfo + 1 : moreInfo - 1);
+    if (target.name === "moreInfoAge")
+      setMoreInfo(Math.floor((moreInfo / 10) % 10) === 0 ? moreInfo + 10 : moreInfo - 10);
+    if (target.name === "moreInfoGender")
+      setMoreInfo(
+        Math.floor((moreInfo / 100) % 100) === 0 ? moreInfo + 100 : moreInfo - 100
+      );
   };
   const onTryAgain = (event) => {
     state = appState.userData;
@@ -249,14 +260,7 @@ function App() {
           dataArray = person.data; // Body segmentation on camera
           // Draw detections
           const coloredPartImage = bodyPix.toColoredPartMask(person);
-          bodyPix.drawMask(
-            canvasRef.current,
-            video,
-            coloredPartImage,
-            0.5,
-            0,
-            true
-          );
+          bodyPix.drawMask(canvasRef.current, video, coloredPartImage, 0.5, 0, true);
         }
 
         const heading = document.getElementById("show");
@@ -337,60 +341,23 @@ function App() {
             const majorValues = pixelArrayToValues(picCollect[0]); // [personHeight, neckWidth, waistWidth, hipsWidth]
             const minorValues = pixelArrayToValues(picCollect[1]); // in pixel not inches
             if (!majorValues.includes(0) || !minorValues.includes(0)) {
-              console.log(
-                "Values returned from pixelArrayToValues: " + majorValues
-              );
-              console.log(
-                "Values returned from pixelArrayToValues: " + minorValues
-              );
+              console.log("Values returned from pixelArrayToValues: " + majorValues);
+              console.log("Values returned from pixelArrayToValues: " + minorValues);
               // Average the heights, should be the same but this reduces error
               const personHeightMajor = (majorValues[0] + minorValues[0]) / 2;
               const personHeightMinor = (majorValues[0] + minorValues[0]) / 2;
               // Convert measuremnents to inches
               console.log("inputHeight: " + inputHeight);
-              const neckMajor = pxToIn(
-                personHeightMajor,
-                inputHeight,
-                majorValues[1]
-              );
-              const neckMinor = pxToIn(
-                personHeightMinor,
-                inputHeight,
-                minorValues[1]
-              );
-              const waistMajor = pxToIn(
-                personHeightMajor,
-                inputHeight,
-                majorValues[2]
-              );
-              const waistMinor = pxToIn(
-                personHeightMinor,
-                inputHeight,
-                minorValues[2]
-              );
-              const hipsMajor = pxToIn(
-                personHeightMajor,
-                inputHeight,
-                majorValues[3]
-              );
-              const hipsMinor = pxToIn(
-                personHeightMinor,
-                inputHeight,
-                minorValues[3]
-              );
+              const neckMajor = pxToIn(personHeightMajor, inputHeight, majorValues[1]);
+              const neckMinor = pxToIn(personHeightMinor, inputHeight, minorValues[1]);
+              const waistMajor = pxToIn(personHeightMajor, inputHeight, majorValues[2]);
+              const waistMinor = pxToIn(personHeightMinor, inputHeight, minorValues[2]);
+              const hipsMajor = pxToIn(personHeightMajor, inputHeight, majorValues[3]);
+              const hipsMinor = pxToIn(personHeightMinor, inputHeight, minorValues[3]);
               // Find Circumferences
-              const neckCircumference = ellipseCircumference(
-                neckMajor,
-                neckMinor
-              );
-              const waistCircumference = ellipseCircumference(
-                waistMajor,
-                waistMinor
-              );
-              const hipsCircumference = ellipseCircumference(
-                hipsMajor,
-                hipsMinor
-              );
+              const neckCircumference = ellipseCircumference(neckMajor, neckMinor);
+              const waistCircumference = ellipseCircumference(waistMajor, waistMinor);
+              const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
               // Calculate estimate
               console.log("inputGender: " + inputGender);
               console.log(
@@ -402,9 +369,7 @@ function App() {
                   495 /
                     (1.0324 -
                       0.19077 *
-                        Math.log10(
-                          waistCircumference * 2.54 - neckCircumference * 2.54
-                        ) +
+                        Math.log10(waistCircumference * 2.54 - neckCircumference * 2.54) +
                       0.15456 * Math.log10(inputHeight * 2.54)) -
                   450;
               } else if (inputGender === "F") {
@@ -464,7 +429,7 @@ function App() {
       <div id="HowTo">
         <h1>How to use :)</h1>
         <SwipeableTextMobileStepper />
-        <BottomScroller />
+        <BottomScroller message="Let's give it a try!" />
       </div>
 
       <div id="Inputs">
@@ -492,13 +457,14 @@ function App() {
           </div>
           <button
             id="moreInfo"
-            name="moreInfo"
+            name="moreInfoHeight"
             type="button"
             class="moreInfo"
-            onClick="onMoreInfo"
+            onClick={onMoreInfo}
           >
             ?
           </button>
+          {moreInfo % 2 === 0 && <p>YAY, it worked!</p>}
         </div>
         <div id="inputContainer">
           <div id="pill">
@@ -514,13 +480,14 @@ function App() {
           </div>
           <button
             id="moreInfo"
-            name="moreInfo"
+            name="moreInfoAge"
             type="button"
             class="moreInfo"
-            onClick="onMoreInfo"
+            onClick={onMoreInfo}
           >
             ?
           </button>
+          {Math.floor((moreInfo / 10) % 10) === 1 && <p>YAY, it worked!</p>}
         </div>
         <div id="inputContainer">
           <div id="pill">
@@ -546,22 +513,20 @@ function App() {
           </div>
           <button
             id="moreInfo"
-            name="moreInfo"
+            name="moreInfoGender"
             type="button"
             class="moreInfo"
-            onClick="onMoreInfo"
+            onClick={onMoreInfo}
           >
             ?
           </button>
+          {Math.floor((moreInfo / 100) % 100) === 1 && <p>YAY, it worked!</p>}
         </div>
-        <BottomScroller />
+        <BottomScroller message="Submit and Continue" />
       </div>
 
       <div id="Measuring">
-        <div
-          id="bodyPix"
-          style={{ background: "#E4E6EB", "margin-top": "20px" }}
-        >
+        <div id="bodyPix" style={{ background: "#E4E6EB", "margin-top": "20px" }}>
           <Webcam
             ref={webcamRef}
             mirrored="true"
@@ -596,8 +561,7 @@ function App() {
         </div>
       </div>
 
-      <div id="Results">
-      </div>
+      <div id="Results"></div>
     </div>
   );
 }
