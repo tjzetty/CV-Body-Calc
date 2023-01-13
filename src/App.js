@@ -27,7 +27,19 @@ const appState = {
   showInfo: "results",
 };
 
+const btsState = {
+  userData: 0,
+  preFront: 1,
+  duringFront: 2,
+  afterFront: 3,
+  preSide: 4,
+  duringSide: 5,
+  afterSide: 6,
+  showInfo: 7,
+};
+
 let state = appState.userData;
+let behindTheScenes = btsState.userData;
 let timerCount = 3;
 let activeTimer = 1;
 let timerInterval = null;
@@ -155,19 +167,8 @@ function App() {
   const [mSelect, setMSelect] = useState("btn btn-outline-primary");
   const [fSelect, setFSelect] = useState("btn btn-outline-primary");
   const [currentState, setCurrentState] = useState("");
-  const [open, setOpen] = useState(false);
-  const [openHelp, setOpenHelp] = useState(false);
   const [moreInfo, setMoreInfo] = useState(0); // Represent first with 1, second with 10, thrid with 100
-  // Event handler for app info.
-  const onCollapse = (event) => {
-    setOpenHelp(false);
-    setOpen(!open);
-  };
-  const onCollapseHelp = (event) => {
-    setOpen(false);
-    setOpenHelp(!openHelp);
-  };
-  // Event handlers for user inputs
+  // Event handlers
   const onInchInput = (event) => {
     setInputInch(event.target.value);
     if (isNaN(inputFeet)) setInputHeight(inputInch);
@@ -204,6 +205,7 @@ function App() {
   };
   const onTryAgain = (event) => {
     state = appState.userData;
+    behindTheScenes = btsState.userData;
     picCollect = Array(2).fill(null);
     setCurrentState(state);
   };
@@ -222,6 +224,7 @@ function App() {
       }, 100);
     } else {
       state = appState.userData;
+      behindTheScenes = btsState.userData;
       setCurrentState(state);
     }
   };
@@ -464,7 +467,12 @@ function App() {
           >
             ?
           </button>
-          {moreInfo % 2 === 0 && <p>YAY, it worked!</p>}
+          {moreInfo % 2 === 0 && (
+            <p>
+              Height is necessary both for determining body fat percentage, and so that we
+              can use it as a reference for other measurements.
+            </p>
+          )}
         </div>
         <div id="inputContainer">
           <div id="pill">
@@ -487,7 +495,12 @@ function App() {
           >
             ?
           </button>
-          {Math.floor((moreInfo / 10) % 10) === 1 && <p>YAY, it worked!</p>}
+          {Math.floor((moreInfo / 10) % 10) === 1 && (
+            <p>
+              We need age to determine a general health diagnosis from your body fat
+              percentage, this does not affect the percentage.
+            </p>
+          )}
         </div>
         <div id="inputContainer">
           <div id="pill">
@@ -520,48 +533,70 @@ function App() {
           >
             ?
           </button>
-          {Math.floor((moreInfo / 100) % 100) === 1 && <p>YAY, it worked!</p>}
+          {Math.floor((moreInfo / 100) % 100) === 1 && (
+            <p>
+              Gender is needed because we make calculations based on the Navy Body Fat
+              Formula which uses requires difference calculations for Males and Females.
+            </p>
+          )}
         </div>
         <BottomScroller message="Submit and Continue" />
       </div>
 
       <div id="Measuring">
         <div id="bodyPix" style={{ background: "#E4E6EB", "margin-top": "20px" }}>
-          <Webcam
-            ref={webcamRef}
-            mirrored="true"
-            style={{
-              position: "absolute",
-              marginLeft: "auto",
-              marginRight: "auto",
-              left: 0,
-              right: 0,
-              textAlign: "center",
-              zIndex: 9,
-              width: 640,
-              height: 480,
-              "border-radius": "6px",
-            }}
-          />
-          <canvas
-            ref={canvasRef}
-            style={{
-              position: "absolute",
-              marginLeft: "auto",
-              marginRight: "auto",
-              left: 0,
-              right: 0,
-              textAlign: "center",
-              zIndex: 9,
-              width: 640,
-              height: 480,
-              "border-radius": "6px",
-            }}
-          />
+          <h1>{currentState}</h1>
+          <div id="measurementContainer">
+            <h1 class="countdown noselect">{timerCount}</h1>
+            <img class="guideImage noselect" src="/tose.webp" alt="" />
+            <img
+              class="guideImage noselect"
+              src="/sidetose.png"
+              alt=""
+              style={{ height: "1000px" }}
+            />
+            <Webcam
+              ref={webcamRef}
+              mirrored="true"
+              style={{
+                position: "absolute",
+                marginLeft: "auto",
+                marginRight: "auto",
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                zIndex: 9,
+                width: 640,
+                height: 480,
+                "border-radius": "6px",
+              }}
+            />
+            <canvas
+              ref={canvasRef}
+              style={{
+                position: "absolute",
+                marginLeft: "auto",
+                marginRight: "auto",
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                zIndex: 9,
+                width: 640,
+                height: 480,
+                "border-radius": "6px",
+              }}
+            />
+          </div>
         </div>
       </div>
 
-      <div id="Results"></div>
+      <div id="Results">
+        <div id="resultsContainer">
+          <h1>{currentState}</h1>
+          <p>Looks like you're doin good!</p>
+        </div>
+        <BottomScroller message="Want to Try Again?" />
+      </div>
     </div>
   );
 }

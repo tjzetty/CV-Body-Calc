@@ -82,10 +82,14 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  margin-left: 10px;
+  margin: 0 10px;
   background-color: #00befa;
   border-style: none;
   color: white;
+}
+#inputContainer > p {
+  color: #00befa;
+  width: 33%;
 }
 #fSelect {
   margin-right: 10px;
@@ -95,4 +99,90 @@ body {
   --bs-btn-border-color: #969696 !important;
 }
 #Measuring {
+  margin-top: 15vh;
+  height: 85vh;
+
+  display: flex;
+  gap: 25px;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+#measurementContainer {
+  position: "absolute";
+  margin-left: "auto";
+  margin-right: "auto";
+  left: 0;
+  right: 0;
+  text-align: "center";
+  width: 640;
+  height: 480;
+  border-radius: "6px";
+}
+
+.countdown {
+  position: absolute; /* or absolute */
+  top: 33%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  color: #424242;
+  opacity: 70%;
+  font-size: 10vw;
+}
+
+.guideImage {
+  position: absolute; /* or absolute */
+  top: 40%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 70%;
+  max-height: 480px;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+#Results {
+  margin-top: 15vh;
+  height: 85vh;
+
+  display: flex;
+  gap: 25px;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+#resultsContainer {
+  background: url('/public/blob-haikei-1.svg') no-repeat center top /auto;
+  height: 70%;
+  width: 50%;
+  top: 50%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+}
+
+#resultsContainer > h1 {
+  font-size: 5vw;
+}
+
+#resultsContainer > p {
+  font-size: 1.91vw;
 }
