@@ -431,7 +431,8 @@ function App() {
 
       <div id="HowTo">
         <h1>How to use :)</h1>
-        <SwipeableTextMobileStepper />
+        <div id="stepper"><SwipeableTextMobileStepper /></div>
+        
         <BottomScroller message="Let's give it a try!" />
       </div>
 

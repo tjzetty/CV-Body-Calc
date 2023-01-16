@@ -34,6 +34,11 @@ body {
   align-items: center;
   position: relative;
 }
+#stepper {
+  display: flex;
+  justify-content: center;
+  max-width: 50%;
+}
 #HowTo h1 {
   color: white;
 }
@@ -75,8 +80,6 @@ body {
 }
 #pill input {
   border-style: none;
-}
-#pill button {
 }
 #moreInfo {
   width: 40px;
@@ -163,6 +166,10 @@ body {
   flex-direction: column;
   align-items: center;
   position: relative;
+}
+
+canvas {
+  box-shadow: 0px 0px 15px black;
 }
 
 #resultsContainer {
