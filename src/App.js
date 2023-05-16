@@ -1,10 +1,12 @@
 import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
-import { tf } from "@tensorflow/tfjs";  // eslint-disable-line no-unused-vars
+import { tf } from "@tensorflow/tfjs"; // eslint-disable-line no-unused-vars
 import * as bodyPix from "@tensorflow-models/body-pix";
 import { initializeApp } from "firebase/app";
 import { getAnalytics, logEvent } from "firebase/analytics";
 import "./App.css";
+import SwipeableTextMobileStepper from "./Components/Carousel.js";
+import BottomScroller from "./Components/BottomScroller.js";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -13,25 +15,34 @@ const firebaseConfig = {
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-
-
 const appState = {
-  userData : "input your data",
-  prePicture : "taking picture...",
-  afterPicture : "change poses",
-  showInfo : "results"
+  userData: "input your data",
+  prePicture: "taking picture...",
+  afterPicture: "change poses",
+  showInfo: "results",
+};
+
+const btsState = {
+  userData: 0,
+  preFront: 1,
+  duringFront: 2,
+  preSide: 3,
+  duringSide: 4,
+  showInfo: 5,
 };
 
 let state = appState.userData;
+let behindTheScenes = btsState.userData;
 let timerCount = 3;
 let activeTimer = 1;
 let timerInterval = null;
 let picCollect = Array(2).fill(null);
+let debug = false;
 
 function pixelArrayToValues(dataArray) {
   // Measurements (coordinates)
@@ -53,7 +64,7 @@ function pixelArrayToValues(dataArray) {
     let currentIsBody = current === 13 || current === 12;
     let belowIsBody = next === 13 || next === 12;
     let belowIsWaist = next === 14 || next === 16;
-    
+
     if (currentIsPerson) {
       height[0] = height[0] < 0 ? y : Math.min(y, height[0]);
       height[1] = height[1] < 0 ? y : Math.max(y, height[1]);
@@ -118,11 +129,18 @@ function ellipseCircumference(major, minor) {
   // inputs are diameter, forumla uses radius
   major = 0.5 * major;
   minor = 0.5 * minor;
-  return Math.PI * (major + minor) * (3 * (major - minor) ** 2 / ((major + minor) ** 2 * (Math.sqrt(-3 * (major - minor) ** 2 / ((major + minor) ** 2) + 4) + 10)) + 1);
+  return (
+    Math.PI *
+    (major + minor) *
+    ((3 * (major - minor) ** 2) /
+      ((major + minor) ** 2 *
+        (Math.sqrt((-3 * (major - minor) ** 2) / (major + minor) ** 2 + 4) + 10)) +
+      1)
+  );
 }
 
 function pxToIn(heightPx, heightIn, measurement) {
-  let ratio = heightIn/heightPx;
+  let ratio = heightIn / heightPx;
   return measurement * ratio;
 }
 
@@ -139,43 +157,49 @@ function countDown() {
 function App() {
   const webcamRef = useRef(null);
 
-  const getInitialGender = () => {
-    const inputGender = "M";
-    return inputGender;
-  };
-  const getInitialValue = () => {
-    const value = NaN;
-    return value;
-  };
-  
   // User inputs gathered using State cause why not
-  const [inputHeight, setInputHeight] = useState(getInitialValue);
-  const [inputAge, setInputAge] = useState(getInitialValue);
-  const [inputGender, setInputGender] = useState(getInitialGender);
-  const [currentState, setCurrentState] = useState('');
-  const [open, setOpen] = useState(false);
-  const [openHelp, setOpenHelp] = useState(false);
-  // Event handler for app info.
-  const onCollapse = event => {
-    setOpenHelp(false);
-    setOpen(!open);
+  const [inputInch, setInputInch] = useState(NaN);
+  const [inputFeet, setInputFeet] = useState(NaN);
+  const [inputAge, setInputAge] = useState(NaN);
+  const [inputGender, setInputGender] = useState("DEFAULT");
+  const [mSelect, setMSelect] = useState("btn btn-outline-primary");
+  const [fSelect, setFSelect] = useState("btn btn-outline-primary");
+  const [currentState, setCurrentState] = useState("");
+  const [moreInfo, setMoreInfo] = useState(0); // Represent first with 1, second with 10, thrid with 100
+  // Event handlers
+  const onInchInput = (event) => {
+    setInputInch(parseInt(event.target.value));
   };
-  const onCollapseHelp = event => {
-    setOpen(false);
-    setOpenHelp(!openHelp);
+  const onFeetInput = (event) => {
+    setInputFeet(parseInt(event.target.value));
   };
-  // Event handlers for user inputs
-  const onHeightInput = event => {
-    setInputHeight(event.target.value);
-  };
-  const onAgeInput = event => {
+  const onAgeInput = (event) => {
     setInputAge(event.target.value);
   };
-  const onGenderInput = event => {
-    setInputGender(event.target.value);
+  const onMSelect = (event) => {
+    setMSelect("btn btn-primary");
+    setFSelect("btn btn-outline-primary");
+    setInputGender("M");
   };
-  const onTryAgain = event => {
+  const onFSelect = (event) => {
+    setFSelect("btn btn-primary");
+    setMSelect("btn btn-outline-primary");
+    setInputGender("F");
+  };
+  const onMoreInfo = (event) => {
+    const target = event.target;
+    if (target.name === "moreInfoHeight")
+      setMoreInfo(moreInfo % 2 === 0 ? moreInfo + 1 : moreInfo - 1);
+    if (target.name === "moreInfoAge")
+      setMoreInfo(Math.floor((moreInfo / 10) % 10) === 0 ? moreInfo + 10 : moreInfo - 10);
+    if (target.name === "moreInfoGender")
+      setMoreInfo(
+        Math.floor((moreInfo / 100) % 100) === 0 ? moreInfo + 100 : moreInfo - 100
+      );
+  };
+  const onTryAgain = (event) => {
     state = appState.userData;
+    behindTheScenes = btsState.userData;
     picCollect = Array(2).fill(null);
     setCurrentState(state);
   };
@@ -183,17 +207,23 @@ function App() {
   const runBodySegment = async () => {
     const net = await bodyPix.load();
     // console.log("Bodypix model loaded.")
-    if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
+    if (
+      !isNaN(inputInch) &&
+      !isNaN(inputFeet) &&
+      !isNaN(inputAge) &&
+      (inputGender === "M" || inputGender === "F")
+    ) {
       setInterval(() => {
         detect(net);
-      }, 100);
+      }, 250);
     } else {
       state = appState.userData;
+      behindTheScenes = btsState.userData;
       setCurrentState(state);
     }
   };
   const canvasRef = useRef(null);
-  
+
   const detect = async (net) => {
     // Check data is available
     try {
@@ -202,83 +232,100 @@ function App() {
         webcamRef !== null &&
         webcamRef.current.video.readyState === 4
       ) {
-      // Get video properties
-      const video = webcamRef.current.video;
-      const videoHeight = video.videoHeight;
-      const videoWidth = video.videoWidth;
-      // Set video width and height
-      webcamRef.current.video.height = videoHeight;
-      webcamRef.current.video.width = videoWidth;
-      // Set canvas width and height
-      canvasRef.current.height = videoHeight;
-      canvasRef.current.width = videoWidth;
+        // Get video properties
+        const video = webcamRef.current.video;
+        const videoHeight = video.videoHeight;
+        const videoWidth = video.videoWidth;
+        // Set video width and height
+        webcamRef.current.video.height = videoHeight;
+        webcamRef.current.video.width = videoWidth;
+        // Set canvas width and height
+        canvasRef.current.height = videoHeight;
+        canvasRef.current.width = videoWidth;
 
-      let person = null;
-      let scores = null;
-      let dataArray = null;
-      if (state === appState.prePicture) {
-        // Make detections
-        person = await net.segmentPersonParts(video, {
-          flipHorizontal: false,
-          internalResolution: "medium",
-          segmentationThreshold: 0.7,
-        });
-        scores = person.allPoses[0]['keypoints']; // Different confidence values
-        dataArray = person.data; // Body segmentation on camera
-        // Draw detections
-        const coloredPartImage = bodyPix.toColoredPartMask(person);
-        bodyPix.drawMask(
-          canvasRef.current,
-          video,
-          coloredPartImage,
-          0.5,
-          0,
-          true
-        );
-      }
+        let person = null;
+        let scores = null;
+        let dataArray = null;
+        if (state === appState.prePicture) {
+          // Make detections
+          person = await net.segmentPersonParts(video, {
+            flipHorizontal: false,
+            internalResolution: "medium",
+            segmentationThreshold: 0.7,
+          });
+          scores = person.allPoses[0]["keypoints"]; // Different confidence values
+          dataArray = person.data; // Body segmentation on camera
+          // Draw detections
+          const coloredPartImage = bodyPix.toColoredPartMask(person);
+          bodyPix.drawMask(canvasRef.current, video, coloredPartImage, 0.5, 0, true);
+        }
 
-        const heading = document.getElementById('show');
-        const timerHeading = document.getElementById('timer');
-        switch(state) {
-          case appState.userData://checks to see if user data is available
+        switch (state) {
+          case appState.userData: //checks to see if user data is available
             setCurrentState(state);
-            if(!isNaN(inputHeight) && !isNaN(inputHeight) && !isNaN(inputAge) && (inputGender === 'M' || inputGender === 'F')) {
+            if (
+              !isNaN(inputInch) &&
+              !isNaN(inputFeet) &&
+              !isNaN(inputAge) &&
+              (inputGender === "M" || inputGender === "F")
+            ) {
+              if (debug) {
+                console.log(
+                  `userData: inputHeight ${
+                    inputInch + inputFeet * 12
+                  }, inputInch: ${inputInch}, inputFeet: ${inputFeet}, inputAge: ${inputAge}, inputGender: ${inputGender}`
+                );
+                console.log("prePicture: making detections with BodyPix");
+              }
               state = appState.prePicture;
-              setCurrentState(state);          
+              behindTheScenes = btsState.preFront;
+              setCurrentState(state);
             }
             break;
 
           case appState.prePicture: // stage to check for proper posision
-            let confidenceLimit = 0.90;
-            let confident = scores[0]['score']   > confidenceLimit && 
-                           (scores[5]['score']   > confidenceLimit ||
-                            scores[6]['score']   > confidenceLimit) && 
-                           (scores[11]['score']  > confidenceLimit ||
-                            scores[12]['score']  > confidenceLimit);
-            
+            let confidenceLimit = 0.9;
+            let confident =
+              scores[0]["score"] > confidenceLimit &&
+              (scores[5]["score"] > confidenceLimit ||
+                scores[6]["score"] > confidenceLimit) &&
+              (scores[11]["score"] > confidenceLimit ||
+                scores[12]["score"] > confidenceLimit);
+            if (debug && !confident) {
+              const pulledArray = [0, 5, 6, 11, 12].map((index) => scores[index]["score"]);
+              console.log("prePicture: not confident, " + pulledArray);
+            }
             if (confident) {
-              // Is timer already ticking?  
-              if(activeTimer === 1) {
+              // Is timer already ticking?
+              if (activeTimer === 1) {
                 timerInterval = setInterval(countDown, 1000);
               }
-              heading.textContent = timerCount;
-              timerHeading.textContent = timerCount;
+              if (behindTheScenes === btsState.preFront)
+                behindTheScenes = btsState.duringFront;
+              if (behindTheScenes === btsState.preSide)
+                behindTheScenes = btsState.duringSide;
               activeTimer = 0;
             } else {
-              resetTimer(timerInterval,3);
-              heading.textContent = "Pose";
-              timerHeading.textContent = "Pose";
+              resetTimer(timerInterval, 3);
+              if (behindTheScenes === btsState.duringFront)
+                behindTheScenes = btsState.preFront;
+              if (behindTheScenes === btsState.duringSide)
+                behindTheScenes = btsState.preSide;
             }
-            
             // When timer set to 0 save image
-            if(timerCount <= 0) {
+            if (timerCount <= 0) {
+              console.log("postFront: timer reset to " + timerCount);
               resetTimer(timerInterval, 2);
-              if(picCollect[0] == null) {
+              if (picCollect[0] == null) {
+                if (debug) console.log("preSide: captured front profile");
                 picCollect[0] = dataArray;
+                behindTheScenes = btsState.preSide;
               } else {
+                if (debug) console.log("postSide: captured side profile");
                 picCollect[1] = dataArray;
                 setCurrentState("Calculating Body Fat Percentage");
-                heading.textContent = "Help us improve by anonymously sharing your results at the survey linked in blue at the top of the page.";
+                // heading.textContent =
+                //   "Help us improve by anonymously sharing your results at the survey linked in blue at the top of the page.";
               }
               state = appState.afterPicture;
               setCurrentState(state);
@@ -286,35 +333,37 @@ function App() {
             break;
 
           case appState.afterPicture: // checks to see if done taking all pictures
-            if(picCollect[1] != null) {
+            if (picCollect[1] != null) {
               state = appState.showInfo;
+              behindTheScenes = btsState.showInfo;
             } else {
-              if(activeTimer === 1) {
-                timerInterval = setInterval(countDown,1000);
+              if (activeTimer === 1) {
+                timerInterval = setInterval(countDown, 1000);
                 activeTimer = 0;
               }
-              if(timerCount <= 0) {
-                resetTimer(timerInterval,3);
+              if (timerCount <= 0) {
+                resetTimer(timerInterval, 3);
                 state = appState.prePicture;
                 setCurrentState(state);
-              } else {
-                heading.textContent = "Get Ready for Second Pose";
               }
             }
             break;
 
           case appState.showInfo:
-            // Just some global values to use for calculations 
-            const majorValues = pixelArrayToValues(picCollect[0]);  // [personHeight, neckWidth, waistWidth, hipsWidth]
-            const minorValues = pixelArrayToValues(picCollect[1]);  // in pixel not inches 
-            if (!majorValues.includes(0) || !minorValues.includes(0)) {           
+            // Just some global values to use for calculations
+            const majorValues = pixelArrayToValues(picCollect[0]); // [personHeight, neckWidth, waistWidth, hipsWidth]
+            const minorValues = pixelArrayToValues(picCollect[1]); // in pixel not inches
+            if (!majorValues.includes(0) || !minorValues.includes(0)) {
               console.log("Values returned from pixelArrayToValues: " + majorValues);
               console.log("Values returned from pixelArrayToValues: " + minorValues);
+              console.log("[height, neck, waist, hips");
               // Average the heights, should be the same but this reduces error
-              const personHeightMajor = (majorValues[0] + minorValues[0]) / 2; 
-              const personHeightMinor = (majorValues[0] + minorValues[0]) / 2; 
+              const personHeightMajor = (majorValues[0] + minorValues[0]) / 2;
+              const personHeightMinor = (majorValues[0] + minorValues[0]) / 2;
               // Convert measuremnents to inches
-              console.log("inputHeight: " + inputHeight);
+              const inputHeight = inputFeet * 12 + inputInch;
+              console.log(`inputHeight: ${inputHeight} (${inputFeet} feet, ${inputInch} inches)`);
+
               const neckMajor = pxToIn(personHeightMajor, inputHeight, majorValues[1]);
               const neckMinor = pxToIn(personHeightMinor, inputHeight, minorValues[1]);
               const waistMajor = pxToIn(personHeightMajor, inputHeight, majorValues[2]);
@@ -327,33 +376,49 @@ function App() {
               const hipsCircumference = ellipseCircumference(hipsMajor, hipsMinor);
               // Calculate estimate
               console.log("inputGender: " + inputGender);
-              console.log(`[inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference]: [${inputGender}, ${inputHeight}, ${waistCircumference}, ${hipsCircumference}, ${neckCircumference}]`);
+              console.log(
+                `[inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference]: [${inputGender}, ${inputHeight}, ${waistCircumference}, ${hipsCircumference}, ${neckCircumference}]`
+              );
               let BFEstimate = NaN;
               if (inputGender === "M") {
-                BFEstimate = 495 / (1.0324 - 0.19077 * Math.log10(waistCircumference * 2.54 - neckCircumference * 2.54) + 0.15456 * Math.log10(inputHeight * 2.54)) - 450;
+                BFEstimate =
+                  495 /
+                    (1.0324 -
+                      0.19077 *
+                        Math.log10(waistCircumference * 2.54 - neckCircumference * 2.54) +
+                      0.15456 * Math.log10(inputHeight * 2.54)) -
+                  450;
               } else if (inputGender === "F") {
-                BFEstimate = 495 / (1.29579 - 0.35004 * Math.log10(waistCircumference * 2.54 + hipsCircumference * 2.54 - neckCircumference * 2.54) + 0.22100 * Math.log10(inputHeight * 2.54)) - 450;
+                BFEstimate =
+                  495 /
+                    (1.29579 -
+                      0.35004 *
+                        Math.log10(
+                          waistCircumference * 2.54 +
+                            hipsCircumference * 2.54 -
+                            neckCircumference * 2.54
+                        ) +
+                      0.221 * Math.log10(inputHeight * 2.54)) -
+                  450;
               }
               //const BFEstimate = navySealBFormula(inputGender, inputHeight, waistCircumference, hipsCircumference, neckCircumference);
               console.log("Body Fat Estimate: " + BFEstimate.toFixed(2));
-              logEvent(analytics, 'BFEstimate', {Estimate: BFEstimate, Gender: inputGender, Height: inputHeight, Waist_Circ: waistCircumference, Hips_Circ: hipsCircumference, Neck_Circ: neckCircumference});
-              timerHeading.textContent = "";
-              setCurrentState(BFEstimate.toFixed(2) + '%');
-              if (isNaN(BFEstimate)) 
-                console.warn("Body Fat Estimate was bad.");
-
-              // heading.textContent = BFEstimate;
+              logEvent(analytics, "BFEstimate", {
+                Estimate: BFEstimate,
+                Gender: inputGender,
+                Height: inputHeight,
+                Waist_Circ: waistCircumference,
+                Hips_Circ: hipsCircumference,
+                Neck_Circ: neckCircumference,
+              });
+              setCurrentState(BFEstimate.toFixed(2) + "%");
+              if (isNaN(BFEstimate)) console.warn("Body Fat Estimate was bad.");
             }
             break;
 
           default:
-            // code block
-        } 
-
-
-        // Just some example usages for later :)
-        // const elli = ellipseCircumference(parseInt(inputHeight), parseInt(inputWeight));
-        // console.warn("major ", inputHeight, ", minor ", inputWeight, ", circ ", elli);
+          // code block
+        }
       }
     } catch (e) {
       // Getting rid of those annoying type errors...
@@ -366,128 +431,191 @@ function App() {
 
   return (
     <div className="App" class="container" id="body">
-      <style>{`
-        #collapseDiv {
-          width: 80%;
-          background: #E4E6EB;
-          border-radius: 6px;
-          padding: 10px 10px 10px 10px;
-          margin: 10px 0px 0px 0px;
-        }
-        #body {
-          margin: 10px 10% 10px 10%;
-        }
-        `}</style>
-
-      <div class="alert alert-primary" role="alert">
-        If this is your first time using the app please record your results anonomously <a href="https://forms.gle/myrdtqnKj3LzFHew9" class="alert-link" target="_blank" rel="noreferrer">here</a>!
+      <div id="Header">
+        <h1>Body Fat Estimator</h1>
       </div>
 
-      <button class="btn btn-primary" onClick={onCollapse} type="button" aria-expanded="false" aria-controls="collapseExample" style={{margin: "0px 10px 0px 0px",}}>
-        How to Use the App {open && "▲"}{!open && "▼"}
-      </button>
-      <button class="btn btn-primary" onClick={onCollapseHelp} type="button" aria-expanded="false" aria-controls="collapseExample">
-        Help {openHelp && "▲"}{!openHelp && "▼"}
-      </button>
-      {open && <div id="collapseDiv">
-        <h2>There are 4 phases to this app: data input, front-profile photo, side-profile photo, and results.</h2>
-        <h3>Data Input: </h3><p>Please input your height, gender, and age.</p>
-        <h3>Front-Profile Photo: </h3><p>Stand so your whole body is visible in a t-pose facing the camera.</p>
-        <h3>Side-Profile Photo: </h3><p>Stand so your whole body is visible in a t-pose perpendicular to the camera.</p>
-        <h3>Results: </h3><p>Your body fat will appear as a percentage. For best results wear a tight fitting shirt with good lighting, this is usually accurate ±5%.</p>
-      </div>}
-      {openHelp && <div id="collapseDiv">
-        <h2>Common Issues</h2>
-        <ul>
-          <li><h5>If the app gives you a result that is NaN or negative it can help to use better lighting or a better background. The best results come from a background that contrasts well with your shirt/body such as a black shirt in front of a white wall.</h5></li>
-          <li><h5>If the app is just saying "Pose" when trying to take a picture, this means the model has not yet recognized you and is often the result of bad lighting.</h5></li>
-        </ul>
-      </div>}
-      <div class="row row-cols-auto" style={{padding: "10px 0px 10px 0px",}}>
-        <div class="col">
-          <input
-            type="number"
-            placeholder="? inches"
-            id="inputHeight"
-            name="inputHeight"
-            onChange={onHeightInput}
-            value={inputHeight}
-            style={{margin: "0px 10px 0px 0px",}}
-          />
-          <select 
-            defaultValue={'M'} 
-            id="inputGender"
-            name="inputGender" 
-            onChange={onGenderInput} 
-            value={inputGender}
+      <div id="HowTo">
+        <h1>How to use :)</h1>
+        <div id="stepper">
+          <SwipeableTextMobileStepper />
+        </div>
+
+        <BottomScroller message="Let's give it a try!" />
+      </div>
+
+      <div id="Inputs">
+        <h1>First we need some data...</h1>
+        <div id="inputContainer">
+          <div id="pill">
+            <h2>Height:</h2>
+            <input
+              type="number"
+              placeholder="? ft"
+              id="inputFeet"
+              name="inputFeet"
+              onChange={onFeetInput}
+              value={inputFeet.toString()}
+              style={{ marginRight: "10px" }}
+            />
+            <input
+              type="number"
+              placeholder="? in"
+              id="inputInch"
+              name="inputInch"
+              onChange={onInchInput}
+              value={inputInch.toString()}
+            />
+          </div>
+          <button
+            id="moreInfo"
+            name="moreInfoHeight"
+            type="button"
+            class="moreInfo"
+            onClick={onMoreInfo}
           >
-            {/* <option value="DEFAULT" disabled>Click to select...</option> */}
-            <option value="M">Male</option>
-            <option value="F">Female</option>
-          </select>
-        </div>
-      </div>
-      <div class="row row-cols-auto" style={{padding: "10px 0px 10px 0px",}}>
-        <div class="col">
-          <input
-            type="number"
-            placeholder="? years"
-            id="inputAge"
-            name="inputAge"
-            onChange={onAgeInput}
-            value={inputAge}
-            style={{margin: "0px 10px 0px 0px",}}
-          />
-          <button class="btn btn-primary" onClick={onTryAgain}>
-            Try Again?
+            ?
           </button>
+          {moreInfo % 2 === 0 && (
+            <p>
+              Height is necessary both for determining body fat percentage, and so that we
+              can use it as a reference for other measurements.
+            </p>
+          )}
+        </div>
+        <div id="inputContainer">
+          <div id="pill">
+            <h2>Age:</h2>
+            <input
+              type="number"
+              placeholder="? yrs"
+              id="inputAge"
+              name="inputAge"
+              onChange={onAgeInput}
+              value={inputAge.toString()}
+            />
+          </div>
+          <button
+            id="moreInfo"
+            name="moreInfoAge"
+            type="button"
+            class="moreInfo"
+            onClick={onMoreInfo}
+          >
+            ?
+          </button>
+          {Math.floor((moreInfo / 10) % 10) === 1 && (
+            <p>
+              We need age to determine a general health diagnosis from your body fat
+              percentage, this does not affect the percentage.
+            </p>
+          )}
+        </div>
+        <div id="inputContainer">
+          <div id="pill">
+            <h2>Gender:</h2>
+            <button
+              id="fSelect"
+              name="fSelect"
+              type="button"
+              class={fSelect}
+              onClick={onFSelect}
+            >
+              F
+            </button>
+            <button
+              id="mSelect"
+              name="mSelect"
+              type="button"
+              class={mSelect}
+              onClick={onMSelect}
+            >
+              M
+            </button>
+          </div>
+          <button
+            id="moreInfo"
+            name="moreInfoGender"
+            type="button"
+            class="moreInfo"
+            onClick={onMoreInfo}
+          >
+            ?
+          </button>
+          {Math.floor((moreInfo / 100) % 100) === 1 && (
+            <p>
+              Gender is needed because we make calculations based on the Navy Body Fat
+              Formula which uses requires difference calculations for Males and Females.
+            </p>
+          )}
+        </div>
+        <BottomScroller message="Submit and Continue" />
+      </div>
+
+      <div id="Measuring">
+        <div id="bodyPix" style={{ background: "#E4E6EB", marginTop: "20px" }}>
+          <h1>{currentState}</h1>
+          <div id="measurementContainer">
+            {(behindTheScenes === btsState.duringSide) |
+              (behindTheScenes === btsState.duringFront) && (
+              <h1 class="countdown noselect">{timerCount}</h1>
+            )}
+            {(behindTheScenes === btsState.preFront) &
+              (behindTheScenes !== btsState.duringFront) && (
+              <img class="guideImage noselect" src="/tose.webp" alt="" />
+            )}
+            {(behindTheScenes === btsState.preSide) &
+              (behindTheScenes !== btsState.duringSide) && (
+              <img
+                class="guideImage noselect"
+                src="/sidetose.png"
+                alt=""
+                style={{ height: "1000px" }}
+              />
+            )}
+            <Webcam
+              ref={webcamRef}
+              mirrored="true"
+              style={{
+                position: "absolute",
+                marginLeft: "auto",
+                marginRight: "auto",
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                zIndex: 9,
+                width: 640,
+                height: 480,
+                borderRadius: "6px",
+              }}
+            />
+            <canvas
+              ref={canvasRef}
+              style={{
+                position: "absolute",
+                marginLeft: "auto",
+                marginRight: "auto",
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                zIndex: 9,
+                width: 640,
+                height: 480,
+                borderRadius: "6px",
+              }}
+            />
+          </div>
         </div>
       </div>
-      
-      <div class="row row-cols-auto">
-        { !isNaN(inputHeight) && <h2>Height: {inputHeight},</h2> }
-        { !isNaN(inputAge) && <h2>Age: {inputAge},</h2> }
-        <h2>Gender: {inputGender}</h2>
-      </div>
-      <div class="row row-cols-auto">
-        <h2>State: {!currentState && "loading..."}{currentState},</h2>
-        <h2 id="timer">Camera: {!activeTimer && timerCount} {activeTimer && "waiting..."}</h2>
-      </div>
 
-      <h1 id="show">{/*Input User Info*/}</h1>
-
-      <div id="bodyPix" style={{background: "#E4E6EB", "margin-top": "20px",}}>
-        <Webcam
-          ref={webcamRef}
-          mirrored="true"
-          style={{
-            position: "absolute",
-            marginLeft: "auto",
-            marginRight: "auto",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            zIndex: 9,
-            width: 640,
-            height: 480,
-            "border-radius": "6px",
-          }}
-        />
-        <canvas
-          ref={canvasRef}
-          style={{
-            position: "absolute",
-            marginLeft: "auto",
-            marginRight: "auto",
-            left: 0,
-            right: 0,
-            textAlign: "center",
-            zIndex: 9,
-            width: 640,
-            height: 480,
-            "border-radius": "6px",
-          }}
-        />
+      <div id="Results">
+        <div id="resultsContainer">
+          <h1>{currentState}</h1>
+          <p>Looks like you're doin good!</p>
+        </div>
+        <a href="#">
+          <BottomScroller message="Want to Try Again?" />
+        </a>
       </div>
     </div>
   );

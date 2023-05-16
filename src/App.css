@@ -1,38 +1,202 @@
-.App {
-  text-align: center;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #424242 !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+::-webkit-scrollbar {
+  display: none;
+  width: 100px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+#body {
+  margin-top: 5vh;
+  margin-left: 10%;
+  margin-right: 10%;
+}
+#Header {
+  top: 0;
+  left: 10%;
+  color: #ff0a0a;
+  position: fixed;
+  width: 100%;
+}
+#HowTo {
+  margin-top: 15vh;
+  height: 85vh;
+
+  display: flex;
+  gap: 25px;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+#stepper {
+  display: flex;
+  justify-content: center;
+  max-width: 50%;
+}
+#HowTo h1 {
+  color: white;
+}
+#Inputs {
+  margin-top: 15vh;
+  height: 85vh;
+
+  display: flex;
+  gap: 25px;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+#Inputs h1,
+#Inputs h2 {
+  color: white;
+}
+#Inputs h2 {
+  width: 40%;
+}
+#inputContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+#pill {
+  background-color: black !important;
+  padding: 10px 20px 10px 20px;
+  border-radius: 500px;
+  width: 400px;
+  display: flex;
+  flex-direction: row;
+}
+#pill input,
+#pill button {
+  height: 50px;
+  width: 100px;
+  border-radius: 0.375rem;
+}
+#pill input {
+  background-color: #ebecf0;
+  border-style: none;
+}
+#moreInfo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 0 10px;
+  background-color: #00befa;
+  border-style: none;
+  color: white;
+}
+#inputContainer > p {
+  color: #00befa;
+  width: 33%;
+}
+#fSelect {
+  margin-right: 10px;
+}
+.btn-outline-primary {
+  background-color: #ebecf0 !important;
+  --bs-btn-border-color: #ebecf0 !important;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+#pill button:hover {
+  color: #0d6efd !important;
+  background-color: white !important;
+}
+
+#Measuring {
+  margin-top: 15vh;
+  height: 85vh;
+
+  display: flex;
+  gap: 25px;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+#measurementContainer {
+  position: "absolute";
+  margin-left: "auto";
+  margin-right: "auto";
+  left: 0;
+  right: 0;
+  text-align: "center";
+  width: 640;
+  height: 480;
+  border-radius: "6px";
+}
+
+.countdown {
+  position: absolute; /* or absolute */
+  top: 33%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  color: #424242;
+  opacity: 70%;
+  font-size: 10vw;
+}
+
+.guideImage {
+  position: absolute; /* or absolute */
+  top: 40%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 70%;
+  max-height: 480px;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+#Results {
+  margin-top: 15vh;
+  height: 85vh;
+
+  display: flex;
+  gap: 25px;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+canvas {
+  box-shadow: 0px 0px 15px black;
+}
+
+#resultsContainer {
+  background: url("/public/blob-haikei-1.svg") no-repeat center top / auto;
+  height: 70%;
+  width: 50%;
+  top: 50%;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+#resultsContainer > h1 {
+  font-size: 5vw;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+#resultsContainer > p {
+  font-size: 1.91vw;
 }
