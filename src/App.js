@@ -31,11 +31,9 @@ const btsState = {
   userData: 0,
   preFront: 1,
   duringFront: 2,
-  afterFront: 3,
-  preSide: 4,
-  duringSide: 5,
-  afterSide: 6,
-  showInfo: 7,
+  preSide: 3,
+  duringSide: 4,
+  showInfo: 5,
 };
 
 let state = appState.userData;
@@ -44,6 +42,7 @@ let timerCount = 3;
 let activeTimer = 1;
 let timerInterval = null;
 let picCollect = Array(2).fill(null);
+let debug = false;
 
 function pixelArrayToValues(dataArray) {
   // Measurements (coordinates)
@@ -161,7 +160,6 @@ function App() {
   // User inputs gathered using State cause why not
   const [inputInch, setInputInch] = useState(NaN);
   const [inputFeet, setInputFeet] = useState(NaN);
-  const [inputHeight, setInputHeight] = useState(0);
   const [inputAge, setInputAge] = useState(NaN);
   const [inputGender, setInputGender] = useState("DEFAULT");
   const [mSelect, setMSelect] = useState("btn btn-outline-primary");
@@ -170,14 +168,10 @@ function App() {
   const [moreInfo, setMoreInfo] = useState(0); // Represent first with 1, second with 10, thrid with 100
   // Event handlers
   const onInchInput = (event) => {
-    setInputInch(event.target.value);
-    if (isNaN(inputFeet)) setInputHeight(inputInch);
-    else setInputHeight(inputInch + inputFeet * 12);
+    setInputInch(parseInt(event.target.value));
   };
   const onFeetInput = (event) => {
-    setInputFeet(event.target.value);
-    if (isNaN(inputInch)) setInputHeight(inputFeet * 12);
-    else setInputHeight(inputInch + inputFeet * 12);
+    setInputFeet(parseInt(event.target.value));
   };
   const onAgeInput = (event) => {
     setInputAge(event.target.value);
@@ -221,7 +215,7 @@ function App() {
     ) {
       setInterval(() => {
         detect(net);
-      }, 100);
+      }, 250);
     } else {
       state = appState.userData;
       behindTheScenes = btsState.userData;
@@ -266,8 +260,6 @@ function App() {
           bodyPix.drawMask(canvasRef.current, video, coloredPartImage, 0.5, 0, true);
         }
 
-        const heading = document.getElementById("show");
-        const timerHeading = document.getElementById("timer");
         switch (state) {
           case appState.userData: //checks to see if user data is available
             setCurrentState(state);
@@ -277,7 +269,16 @@ function App() {
               !isNaN(inputAge) &&
               (inputGender === "M" || inputGender === "F")
             ) {
+              if (debug) {
+                console.log(
+                  `userData: inputHeight ${
+                    inputInch + inputFeet * 12
+                  }, inputInch: ${inputInch}, inputFeet: ${inputFeet}, inputAge: ${inputAge}, inputGender: ${inputGender}`
+                );
+                console.log("prePicture: making detections with BodyPix");
+              }
               state = appState.prePicture;
+              behindTheScenes = btsState.preFront;
               setCurrentState(state);
             }
             break;
@@ -290,31 +291,41 @@ function App() {
                 scores[6]["score"] > confidenceLimit) &&
               (scores[11]["score"] > confidenceLimit ||
                 scores[12]["score"] > confidenceLimit);
-
+            if (debug && !confident) {
+              const pulledArray = [0, 5, 6, 11, 12].map((index) => scores[index]["score"]);
+              console.log("prePicture: not confident, " + pulledArray);
+            }
             if (confident) {
               // Is timer already ticking?
               if (activeTimer === 1) {
                 timerInterval = setInterval(countDown, 1000);
               }
-              heading.textContent = timerCount;
-              timerHeading.textContent = timerCount;
+              if (behindTheScenes === btsState.preFront)
+                behindTheScenes = btsState.duringFront;
+              if (behindTheScenes === btsState.preSide)
+                behindTheScenes = btsState.duringSide;
               activeTimer = 0;
             } else {
               resetTimer(timerInterval, 3);
-              heading.textContent = "Pose";
-              timerHeading.textContent = "Pose";
+              if (behindTheScenes === btsState.duringFront)
+                behindTheScenes = btsState.preFront;
+              if (behindTheScenes === btsState.duringSide)
+                behindTheScenes = btsState.preSide;
             }
-
             // When timer set to 0 save image
             if (timerCount <= 0) {
+              console.log("postFront: timer reset to " + timerCount);
               resetTimer(timerInterval, 2);
               if (picCollect[0] == null) {
+                if (debug) console.log("preSide: captured front profile");
                 picCollect[0] = dataArray;
+                behindTheScenes = btsState.preSide;
               } else {
+                if (debug) console.log("postSide: captured side profile");
                 picCollect[1] = dataArray;
                 setCurrentState("Calculating Body Fat Percentage");
-                heading.textContent =
-                  "Help us improve by anonymously sharing your results at the survey linked in blue at the top of the page.";
+                // heading.textContent =
+                //   "Help us improve by anonymously sharing your results at the survey linked in blue at the top of the page.";
               }
               state = appState.afterPicture;
               setCurrentState(state);
@@ -324,6 +335,7 @@ function App() {
           case appState.afterPicture: // checks to see if done taking all pictures
             if (picCollect[1] != null) {
               state = appState.showInfo;
+              behindTheScenes = btsState.showInfo;
             } else {
               if (activeTimer === 1) {
                 timerInterval = setInterval(countDown, 1000);
@@ -333,8 +345,6 @@ function App() {
                 resetTimer(timerInterval, 3);
                 state = appState.prePicture;
                 setCurrentState(state);
-              } else {
-                heading.textContent = "Get Ready for Second Pose";
               }
             }
             break;
@@ -346,11 +356,14 @@ function App() {
             if (!majorValues.includes(0) || !minorValues.includes(0)) {
               console.log("Values returned from pixelArrayToValues: " + majorValues);
               console.log("Values returned from pixelArrayToValues: " + minorValues);
+              console.log("[height, neck, waist, hips");
               // Average the heights, should be the same but this reduces error
               const personHeightMajor = (majorValues[0] + minorValues[0]) / 2;
               const personHeightMinor = (majorValues[0] + minorValues[0]) / 2;
               // Convert measuremnents to inches
-              console.log("inputHeight: " + inputHeight);
+              const inputHeight = inputFeet * 12 + inputInch;
+              console.log(`inputHeight: ${inputHeight} (${inputFeet} feet, ${inputInch} inches)`);
+
               const neckMajor = pxToIn(personHeightMajor, inputHeight, majorValues[1]);
               const neckMinor = pxToIn(personHeightMinor, inputHeight, minorValues[1]);
               const waistMajor = pxToIn(personHeightMajor, inputHeight, majorValues[2]);
@@ -398,21 +411,14 @@ function App() {
                 Hips_Circ: hipsCircumference,
                 Neck_Circ: neckCircumference,
               });
-              timerHeading.textContent = "";
               setCurrentState(BFEstimate.toFixed(2) + "%");
               if (isNaN(BFEstimate)) console.warn("Body Fat Estimate was bad.");
-
-              // heading.textContent = BFEstimate;
             }
             break;
 
           default:
           // code block
         }
-
-        // Just some example usages for later :)
-        // const elli = ellipseCircumference(parseInt(inputHeight), parseInt(inputWeight));
-        // console.warn("major ", inputHeight, ", minor ", inputWeight, ", circ ", elli);
       }
     } catch (e) {
       // Getting rid of those annoying type errors...
@@ -431,8 +437,10 @@ function App() {
 
       <div id="HowTo">
         <h1>How to use :)</h1>
-        <div id="stepper"><SwipeableTextMobileStepper /></div>
-        
+        <div id="stepper">
+          <SwipeableTextMobileStepper />
+        </div>
+
         <BottomScroller message="Let's give it a try!" />
       </div>
 
@@ -447,7 +455,7 @@ function App() {
               id="inputFeet"
               name="inputFeet"
               onChange={onFeetInput}
-              value={inputFeet}
+              value={inputFeet.toString()}
               style={{ marginRight: "10px" }}
             />
             <input
@@ -456,7 +464,7 @@ function App() {
               id="inputInch"
               name="inputInch"
               onChange={onInchInput}
-              value={inputInch}
+              value={inputInch.toString()}
             />
           </div>
           <button
@@ -484,7 +492,7 @@ function App() {
               id="inputAge"
               name="inputAge"
               onChange={onAgeInput}
-              value={inputAge}
+              value={inputAge.toString()}
             />
           </div>
           <button
@@ -545,17 +553,26 @@ function App() {
       </div>
 
       <div id="Measuring">
-        <div id="bodyPix" style={{ background: "#E4E6EB", "margin-top": "20px" }}>
+        <div id="bodyPix" style={{ background: "#E4E6EB", marginTop: "20px" }}>
           <h1>{currentState}</h1>
           <div id="measurementContainer">
-            <h1 class="countdown noselect">{timerCount}</h1>
-            <img class="guideImage noselect" src="/tose.webp" alt="" />
-            <img
-              class="guideImage noselect"
-              src="/sidetose.png"
-              alt=""
-              style={{ height: "1000px" }}
-            />
+            {(behindTheScenes === btsState.duringSide) |
+              (behindTheScenes === btsState.duringFront) && (
+              <h1 class="countdown noselect">{timerCount}</h1>
+            )}
+            {(behindTheScenes === btsState.preFront) &
+              (behindTheScenes !== btsState.duringFront) && (
+              <img class="guideImage noselect" src="/tose.webp" alt="" />
+            )}
+            {(behindTheScenes === btsState.preSide) &
+              (behindTheScenes !== btsState.duringSide) && (
+              <img
+                class="guideImage noselect"
+                src="/sidetose.png"
+                alt=""
+                style={{ height: "1000px" }}
+              />
+            )}
             <Webcam
               ref={webcamRef}
               mirrored="true"
@@ -569,7 +586,7 @@ function App() {
                 zIndex: 9,
                 width: 640,
                 height: 480,
-                "border-radius": "6px",
+                borderRadius: "6px",
               }}
             />
             <canvas
@@ -584,7 +601,7 @@ function App() {
                 zIndex: 9,
                 width: 640,
                 height: 480,
-                "border-radius": "6px",
+                borderRadius: "6px",
               }}
             />
           </div>
@@ -596,7 +613,9 @@ function App() {
           <h1>{currentState}</h1>
           <p>Looks like you're doin good!</p>
         </div>
-        <BottomScroller message="Want to Try Again?" />
+        <a href="#">
+          <BottomScroller message="Want to Try Again?" />
+        </a>
       </div>
     </div>
   );

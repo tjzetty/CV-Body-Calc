@@ -79,6 +79,7 @@ body {
   border-radius: 0.375rem;
 }
 #pill input {
+  background-color: #ebecf0;
   border-style: none;
 }
 #moreInfo {
@@ -98,9 +99,15 @@ body {
   margin-right: 10px;
 }
 .btn-outline-primary {
-  background-color: #969696 !important;
-  --bs-btn-border-color: #969696 !important;
+  background-color: #ebecf0 !important;
+  --bs-btn-border-color: #ebecf0 !important;
 }
+
+#pill button:hover {
+  color: #0d6efd !important;
+  background-color: white !important;
+}
+
 #Measuring {
   margin-top: 15vh;
   height: 85vh;
@@ -149,11 +156,11 @@ body {
 
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
@@ -173,7 +180,7 @@ canvas {
 }
 
 #resultsContainer {
-  background: url('/public/blob-haikei-1.svg') no-repeat center top /auto;
+  background: url("/public/blob-haikei-1.svg") no-repeat center top / auto;
   height: 70%;
   width: 50%;
   top: 50%;
